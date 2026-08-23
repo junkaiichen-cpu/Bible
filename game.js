@@ -1,275 +1,39 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
-const W = canvas.width, H = canvas.height, GROUND = 438;
-const keys = Object.create(null);
-const state = {
-  over: false, win: false, shake: 0, slow: 0, combo: 0, comboTimer: 0,
-  particles: [], projectiles: [], texts: [], rings: [], timers: [],
-};
-
-const p = {
-  x: 220, y: 370, w: 42, h: 68, vx: 0, vy: 0, face: 1, onGround: true,
-  hp: 100, max: 100, attackTimer: 0, attackStep: 0, attackLock: 0,
-  cdSling: 0, cdDash: 0, ult: 0, sub: 2, inv: 0, hitFlash: 0,
-};
-const e = {
-  x: 742, y: 320, w: 86, h: 118, vx: 0, vy: 0, face: -1, onGround: true,
-  hp: 180, max: 180, stun: 0, hit: 0, attackCd: 65, attackTimer: 0, hitFlash: 0,
-};
-
-const ACTION_KEYS = new Set(['j','k','l','i','o','w','a','d',' ']);
-addEventListener('keydown', (ev) => {
-  const k = ev.key.toLowerCase();
-  if (ACTION_KEYS.has(k)) ev.preventDefault();
-  keys[k] = true;
-  if (ev.repeat || state.over) return;
-  if (k === 'j') attack();
-  if (k === 'k') sling();
-  if (k === 'l') dash();
-  if (k === 'i') substitute();
-  if (k === 'o') ultimate();
-});
-addEventListener('keyup', (ev) => { keys[ev.key.toLowerCase()] = false; });
-
-const mobileButtons = document.querySelectorAll('[data-key]');
-mobileButtons.forEach(btn => {
-  const k = btn.dataset.key;
-  const down = (ev) => { ev.preventDefault(); keys[k] = true; btn.classList.add('pressed'); };
-  const up = (ev) => { ev.preventDefault(); keys[k] = false; btn.classList.remove('pressed'); };
-  btn.addEventListener('pointerdown', down);
-  btn.addEventListener('pointerup', up);
-  btn.addEventListener('pointercancel', up);
-  btn.addEventListener('pointerleave', up);
-});
-document.querySelectorAll('[data-action]').forEach(btn => {
-  btn.addEventListener('pointerdown', ev => {
-    ev.preventDefault(); btn.classList.add('pressed');
-    const action = btn.dataset.action;
-    if (action === 'attack') attack();
-    if (action === 'sling') sling();
-    if (action === 'dash') dash();
-    if (action === 'substitute') substitute();
-    if (action === 'ultimate') ultimate();
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(type => btn.addEventListener(type, () => btn.classList.remove('pressed')));
-});
-
-function hitbox(x,y,w,h){ return {x,y,w,h}; }
-function overlap(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
-function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
-function center(o){ return {x:o.x+o.w/2,y:o.y+o.h/2}; }
-function pop(x,y,t,kind='normal'){ state.texts.push({x,y,t,life:40,kind}); }
-function burst(x,y,count=10,color='#d6b36e',power=3){ for(let i=0;i<count;i++) state.particles.push({x,y,vx:(Math.random()-.5)*power,vy:(Math.random()-.8)*power,life:20+Math.random()*25,c:color,s:2+Math.random()*3}); }
-function ring(x,y,r,color='#e7c47e'){ state.rings.push({x,y,r,life:18,max:18,c:color}); }
-function flash(){ const f=document.getElementById('flash'); f.animate([{opacity:.72},{opacity:0}],{duration:320,easing:'ease-out'}); }
-function message(text){ const el=document.getElementById('centerMessage'); el.textContent=text; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); }
-function addUlt(v){ p.ult = clamp(p.ult+v,0,100); }
-function setTimer(fn,ms){ state.timers.push(setTimeout(fn,ms)); }
-
-function attack(){
-  if (state.over || p.attackLock > 0) return;
-  const now = performance.now();
-  if (!p._lastAttack || now - p._lastAttack > 620) p.attackStep = 0;
-  p._lastAttack = now;
-  p.attackStep = (p.attackStep % 5) + 1;
-  p.attackTimer = 22;
-  p.attackLock = 16;
-  const step = p.attackStep;
-  setTimer(() => {
-    if (state.over) return;
-    const reach = step >= 4 ? 70 : 55;
-    const box = hitbox(p.x + (p.face > 0 ? p.w-4 : -reach+4), p.y+12, reach, 54);
-    if (overlap(box, hitbox(e.x,e.y,e.w,e.h))) {
-      const dmg = [0,7,8,10,12,15][step];
-      strikeEnemy(dmg, step >= 4 ? 12 : 7, step === 5 ? 14 : 7, '普攻');
-    }
-  }, 75);
-}
-
-function sling(){
-  if(state.over || p.cdSling > 0) return;
-  p.cdSling = 44;
-  state.projectiles.push({x:p.x+p.w/2+p.face*22,y:p.y+28,vx:p.face*14,life:65,spin:0});
-  pop(p.x+p.w/2,p.y-18,'投石索','skill');
-}
-function dash(){
-  if(state.over || p.cdDash > 0) return;
-  p.cdDash = 62;
-  p.vx = p.face*13;
-  p.inv = 15;
-  ring(p.x+p.w/2,p.y+p.h/2,22,'#c6a968');
-  burst(p.x+p.w/2,p.y+p.h-4,8,'#d6b36e',2.2);
-  pop(p.x,p.y-16,'奔跑突进','skill');
-}
-function substitute(){
-  if(state.over || p.sub <= 0) return;
-  p.sub--; p.inv=44;
-  const direction = p.face;
-  p.x = clamp(p.x - direction*125, 60, W-p.w-60);
-  burst(p.x+p.w/2,p.y+p.h/2,14,'#c3b18e',3);
-  ring(p.x+p.w/2,p.y+p.h/2,28,'#e0c992');
-  pop(p.x,p.y-16,'替身','skill');
-}
-function ultimate(){
-  if(state.over || p.ult < 100) return;
-  p.ult = 0; state.shake=16; state.slow=35; flash(); message('五块石头');
-  const target = center(e);
-  burst(p.x+p.w/2,p.y+25,22,'#f1d082',4);
-  setTimer(()=>{ if(state.over)return; state.slow=18; burst(target.x,target.y,34,'#fff0bd',6); ring(target.x,target.y,54,'#f5d47e'); strikeEnemy(58, 58, 30, '奥义'); },420);
-}
-function strikeEnemy(dmg, stun=8, knock=7, label='命中'){
-  if(state.over) return;
-  e.hp=clamp(e.hp-dmg,0,e.max); e.stun=Math.max(e.stun,stun); e.hit=Math.max(e.hit,8); e.hitFlash=8;
-  e.vx += p.face*knock; e.vy -= 2.1;
-  state.shake=Math.max(state.shake, dmg>25?8:4);
-  addUlt(dmg>25?10:4);
-  state.combo += 1; state.comboTimer=48;
-  pop(e.x+e.w/2,e.y-14,`-${dmg}`,'damage');
-  if(label) pop(e.x+e.w/2,e.y+e.h+4,label,'skill');
-  burst(e.x+e.w/2,e.y+e.h/2,dmg>25?18:8,dmg>25?'#f4d27e':'#d7bd88',3.5);
-  if(e.hp<=0) finish(true);
-}
-function hurt(dmg){
-  if(p.inv>0 || state.over) return;
-  p.hp=clamp(p.hp-dmg,0,p.max); p.inv=22; state.shake=6; p.hitFlash=8;
-  state.combo=0; burst(p.x+p.w/2,p.y+p.h/2,10,'#9e6252',2.5); pop(p.x+p.w/2,p.y-12,`-${dmg}`,'enemy');
-  if(p.hp<=0) finish(false);
-}
-
-function finish(win){
-  state.over=true; state.win=win;
-  message(win?'巨人倒下了':'你倒在以拉谷');
-  document.getElementById('resultTitle').textContent=win?'巨人倒下了':'倒在以拉谷';
-  document.getElementById('resultCopy').textContent=win
-    ?'你刚刚通过动作机制经历了《撒母耳记上》第17章的核心冲突。下一阶段可以继续解锁大卫的故事线。'
-    :'大卫不是无敌英雄。重新挑战，练习投石索的距离、冲锋的无敌与替身的时机。';
-  setTimer(()=>document.getElementById('result').classList.remove('hidden'),420);
-}
-
-function reset(){
-  state.over=false; state.win=false; state.shake=0; state.slow=0; state.combo=0; state.comboTimer=0; state.projectiles=[]; state.particles=[]; state.texts=[]; state.rings=[];
-  state.timers.forEach(clearTimeout); state.timers=[];
-  Object.assign(p,{x:220,y:370,w:42,h:68,vx:0,vy:0,face:1,onGround:true,hp:100,attackTimer:0,attackStep:0,attackLock:0,cdSling:0,cdDash:0,ult:0,sub:2,inv:0,hitFlash:0,_lastAttack:0});
-  Object.assign(e,{x:742,y:320,w:86,h:118,vx:0,vy:0,face:-1,onGround:true,hp:180,stun:0,hit:0,attackCd:65,attackTimer:0,hitFlash:0});
-  document.getElementById('result').classList.add('hidden');
-  updateHud();
-}
-
-document.getElementById('restartBtn').onclick=reset;
-document.getElementById('storyBtn').onclick=()=>document.getElementById('storyDialog').showModal();
-document.getElementById('closeDialog').onclick=()=>document.getElementById('storyDialog').close();
-document.getElementById('verseBtn').onclick=()=>document.getElementById('storyDialog').showModal();
-
-function update(){
-  const timeScale = state.slow>0 ? .45 : 1;
-  if(!state.over){
-    p.inv=Math.max(0,p.inv-1*timeScale); p.attackTimer=Math.max(0,p.attackTimer-1*timeScale); p.attackLock=Math.max(0,p.attackLock-1*timeScale); p.cdSling=Math.max(0,p.cdSling-1*timeScale); p.cdDash=Math.max(0,p.cdDash-1*timeScale); p.hitFlash=Math.max(0,p.hitFlash-1); state.slow=Math.max(0,state.slow-1);
-    const movingLeft=keys.a, movingRight=keys.d;
-    if(movingLeft && !movingRight) p.vx=-4.6;
-    else if(movingRight && !movingLeft) p.vx=4.6;
-    else p.vx*=.74;
-    if(Math.abs(p.vx)>.1) p.face=Math.sign(p.vx);
-    if(keys.w&&p.onGround){p.vy=-11.2;p.onGround=false;keys.w=false;}
-    p.vy+=.58; p.x+=p.vx*timeScale; p.y+=p.vy*timeScale;
-    if(p.y+p.h>=GROUND){p.y=GROUND-p.h;p.vy=0;p.onGround=true;}
-    p.x=clamp(p.x,28,W-p.w-28);
-    addUlt(.035);
-
-    updateEnemy(timeScale);
-    updateProjectiles(timeScale);
-    updateFx();
-  }
-  updateHud();
-}
-
-function updateEnemy(scale){
-  e.stun=Math.max(0,e.stun-1*scale); e.hit=Math.max(0,e.hit-1); e.hitFlash=Math.max(0,e.hitFlash-1); e.attackCd-=1*scale;
-  if(!e.stun){
-    const dist=(p.x+p.w/2)-(e.x+e.w/2); const abs=Math.abs(dist);
-    if(abs>145) e.vx=Math.sign(dist)*1.35;
-    else if(abs>100) e.vx*=.84;
-    else e.vx=0;
-    if(abs<102 && e.attackCd<=0){ e.attackCd=74; e.attackTimer=18; setTimer(()=>{if(!state.over&&!e.stun){const box=hitbox(e.x+(e.face>0?e.w-5:-58),e.y+18,58,70);if(overlap(box,hitbox(p.x,p.y,p.w,p.h)))hurt(8);}},100); }
-  }else e.vx*=.75;
-  if(Math.abs(e.vx)>.1)e.face=Math.sign(e.vx);
-  e.vy+=.58; e.x+=e.vx*scale; e.y+=e.vy*scale;
-  if(e.y+e.h>=GROUND){e.y=GROUND-e.h;e.vy=0;e.onGround=true;}
-  e.x=clamp(e.x,360,W-e.w-25);
-}
-function updateProjectiles(scale){
-  for(const q of state.projectiles){
-    q.x+=q.vx*scale; q.spin+=.3;
-    if(q.life>0){
-      q.life-=1*scale;
-      if(overlap(hitbox(q.x-7,q.y-7,14,14),hitbox(e.x,e.y,e.w,e.h))){ strikeEnemy(20,13,11,'精准'); q.life=0; }
-    }
-  }
-  state.projectiles=state.projectiles.filter(q=>q.life>0 && q.x>-50 && q.x<W+50);
-}
-function updateFx(){
-  state.comboTimer=Math.max(0,state.comboTimer-1); if(state.comboTimer<=0)state.combo=0;
-  for(const x of state.particles){x.x+=x.vx;x.y+=x.vy;x.vy+=.09;x.life--;x.vx*=.985;}
-  state.particles=state.particles.filter(x=>x.life>0);
-  for(const x of state.texts){x.y-=.55;x.life--;}
-  state.texts=state.texts.filter(x=>x.life>0);
-  for(const x of state.rings){x.r+=2.4;x.life--;}
-  state.rings=state.rings.filter(x=>x.life>0);
-}
-
-function updateHud(){
-  document.getElementById('playerHpText').textContent=`${Math.ceil(p.hp)} / ${p.max}`;
-  document.getElementById('enemyHpText').textContent=`${Math.ceil(e.hp)} / ${e.max}`;
-  document.getElementById('playerHpBar').style.width=`${p.hp/p.max*100}%`;
-  document.getElementById('enemyHpBar').style.width=`${e.hp/e.max*100}%`;
-  document.getElementById('ultBar').style.width=`${p.ult}%`;
-  document.getElementById('enemyStance').textContent=e.stun>0?'巨人 · 失衡':e.attackTimer>0?'巨人 · 进攻':'巨人 · 压迫';
-  const comboHud=document.getElementById('comboHud');
-  comboHud.classList.toggle('show',state.combo>=2);
-  document.getElementById('comboCount').textContent=state.combo;
-}
-
-function draw(){
-  ctx.save();
-  if(state.shake>0){ctx.translate((Math.random()-.5)*state.shake,(Math.random()-.5)*state.shake);state.shake*=.88;if(state.shake<.2)state.shake=0;}
-  drawBg(); drawWorldFx(); drawProjectiles(); drawCharacter(p,'david'); drawCharacter(e,'goliath'); drawParticles(); drawTexts(); ctx.restore();
-  requestAnimationFrame(()=>{update();draw();});
-}
-function drawBg(){
-  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#705944');g.addColorStop(.58,'#b78f59');g.addColorStop(1,'#5c3d25');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#69472b';
-  for(let i=0;i<10;i++){ctx.beginPath();ctx.moveTo(i*120,GROUND);ctx.lineTo(i*120+55,300+Math.sin(i*1.7)*28);ctx.lineTo(i*120+112,GROUND);ctx.fill();}
-  ctx.fillStyle='#4e341f';ctx.fillRect(0,GROUND,W,H-GROUND);ctx.fillStyle='#755033';ctx.fillRect(0,GROUND,W,5);
-  ctx.globalAlpha=.28;ctx.fillStyle='#f5e1b5';for(let i=0;i<34;i++){ctx.fillRect((i*79)%W,310+(i*37)%120,2,2);}ctx.globalAlpha=1;
-  ctx.fillStyle='#dac092';ctx.font='bold 14px Georgia';ctx.fillText('ELAH VALLEY',38,145);ctx.font='bold 11px sans-serif';ctx.fillText('以 拉 谷',40,163);
-  ctx.fillStyle='#e7d4ae';ctx.font='10px sans-serif';ctx.fillText('非利士军营',742,180);ctx.fillStyle='#f1dfbb';ctx.fillText('以色列阵营',68,180);
-}
-function drawWorldFx(){
-  if(e.stun>0){ctx.strokeStyle='#f0ce87';ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.x+e.w/2,e.y+28,35,Math.PI*1.12,Math.PI*1.88);ctx.stroke();ctx.globalAlpha=1;}
-  for(const x of state.rings){ctx.globalAlpha=x.life/x.max;ctx.strokeStyle=x.c;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x.x,x.y,x.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
-}
-function drawCharacter(o,type){
-  const blink=o.inv>0 && Math.floor(o.inv/3)%2===0; if(blink)return;
-  ctx.save();ctx.translate(Math.round(o.x+o.w/2),Math.round(o.y+o.h));ctx.scale(o.face,1);
-  if(type==='david'){
-    ctx.fillStyle='#263b31';ctx.fillRect(-17,-54,34,45);ctx.fillStyle='#caa477';ctx.fillRect(-13,-77,26,23);ctx.fillStyle='#3a2418';ctx.fillRect(-15,-83,30,9);ctx.fillStyle='#8d6338';ctx.fillRect(-24,-11,12,11);ctx.fillRect(12,-11,12,11);
-    ctx.fillStyle='#dbc28e';ctx.fillRect(11,-49,21,5);ctx.fillStyle='#d2a55f';ctx.fillRect(-29,-45,11,5);
-    if(p.attackTimer>0){ctx.fillStyle='#c6b07d';ctx.fillRect(18,-51,36,5);if(p.attackStep>=4){ctx.fillRect(24,-43,28,4);}}
-  }else{
-    ctx.fillStyle='#4c4035';ctx.fillRect(-35,-105,70,88);ctx.fillStyle='#a88b65';ctx.fillRect(-28,-130,56,34);ctx.fillStyle='#332d27';ctx.fillRect(-32,-137,64,12);ctx.fillStyle='#5c4c3d';ctx.fillRect(-50,-72,19,55);ctx.fillRect(31,-72,19,55);ctx.fillStyle='#3a3028';ctx.fillRect(-29,-17,21,17);ctx.fillRect(8,-17,21,17);
-    if(e.attackTimer>0){ctx.fillStyle='#745c45';ctx.fillRect(30,-72,28,8);}
-  }
-  if(o.hitFlash>0){ctx.globalAlpha=.55;ctx.fillStyle='#fff5d6';ctx.fillRect(-45,-140,90,125);ctx.globalAlpha=1;}
-  ctx.restore();
-}
-function drawProjectiles(){
-  for(const q of state.projectiles){
-    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.spin);ctx.fillStyle='#2e271f';ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e1bf7b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-19,0);ctx.lineTo(19,0);ctx.stroke();ctx.restore();
-  }
-}
-function drawParticles(){for(const x of state.particles){ctx.globalAlpha=Math.max(0,x.life/40);ctx.fillStyle=x.c;ctx.fillRect(x.x,x.y,x.s,x.s);ctx.globalAlpha=1;}}
-function drawTexts(){ctx.font='bold 14px sans-serif';ctx.textAlign='center';for(const x of state.texts){ctx.globalAlpha=Math.max(0,x.life/40);ctx.fillStyle=x.kind==='damage'?'#ffe6a4':x.kind==='enemy'?'#d98b7a':'#fff3d2';if(x.kind==='skill')ctx.font='bold 11px sans-serif';ctx.fillText(x.t,x.x,x.y);}ctx.globalAlpha=1;ctx.textAlign='left';}
-
-setInterval(()=>{if(state.over)return;for(let i=0;i<2;i++)state.particles.push({x:Math.random()*W,y:GROUND-3,vx:(Math.random()-.5)*.4,vy:-Math.random()*.9,life:35+Math.random()*30,c:'#c5a66d',s:1+Math.random()*2});},150);
-reset();
-draw();
+const W=canvas.width,H=canvas.height,GROUND=438,keys=Object.create(null);
+const ACTIONS={p1:{attack:'j',skill:'k',dash:'l',sub:'i',ult:'o'},p2:{attack:'1',skill:'2',dash:'3',sub:'4',ult:'5'}};
+const RELEVANT=new Set(['w','a','s','d','j','k','l','i','o','arrowup','arrowdown','arrowleft','arrowright','1','2','3','4','5']);
+const KITS={david:{hp:100,speed:4.6,jump:11.2,power:1,skill:'投石索',dash:'奔跑突进',ult:'五块石头',color:'#b6a06e',type:'david'},moses:{hp:112,speed:4,jump:10.5,power:1.05,skill:'杖击',dash:'分海步',ult:'红海',color:'#8ea0ad',type:'moses'},samson:{hp:125,speed:3.8,jump:10,power:1.22,skill:'驴腮骨',dash:'巨力突进',ult:'推柱',color:'#a88762',type:'samson'},daniel:{hp:108,speed:4,jump:10.8,power:.95,skill:'祷告',dash:'狮坑步',ult:'封住狮口',color:'#8d9eb8',type:'daniel'},elijah:{hp:98,speed:4.35,jump:11,power:1.08,skill:'火焰',dash:'先知步',ult:'从天降火',color:'#ba744b',type:'elijah'},paul:{hp:100,speed:4.9,jump:11.5,power:.98,skill:'书信',dash:'宣教奔行',ult:'宣教旅程',color:'#8b9b7b',type:'paul'}};
+const state={running:false,over:false,shake:0,slow:0,particles:[],projectiles:[],rings:[],texts:[],timers:[],selected:{p1:null,p2:null}};let p1=null,p2=null;
+const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),box=(x,y,w,h)=>({x,y,w,h}),overlap=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y,center=f=>({x:f.x+f.w/2,y:f.y+f.h/2}),opp=f=>f.slot==='p1'?p2:p1;
+function pop(x,y,t,kind='normal'){state.texts.push({x,y,t,life:38,kind})}function burst(x,y,n=10,c='#d6b36e',power=3){for(let i=0;i<n;i++)state.particles.push({x,y,vx:(Math.random()-.5)*power,vy:(Math.random()-.8)*power,life:20+Math.random()*24,c,s:2+Math.random()*3})}function ring(x,y,r,c='#e7c47e'){state.rings.push({x,y,r,life:18,c})}function msg(t){const e=$('centerMessage');e.textContent=t;e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}function flash(){$('flash').animate([{opacity:.72},{opacity:0}],{duration:240,easing:'ease-out'})}function addUlt(f,v){f.ult=clamp(f.ult+v,0,100)}function later(fn,ms){state.timers.push(setTimeout(fn,ms))}
+function fighter(slot,id,x,face){const k=KITS[id];return{slot,id,x,y:GROUND-68,w:42,h:68,vx:0,vy:0,face,onGround:true,hp:k.hp,max:k.hp,speed:k.speed,jump:k.jump,power:k.power,skillName:k.skill,dashName:k.dash,ultName:k.ult,color:k.color,type:k.type,attackTimer:0,attackStep:0,attackLock:0,lastAttack:0,cdSkill:0,cdDash:0,ult:0,sub:2,inv:0,hitFlash:0,stun:0,combo:0,comboTimer:0}}
+function renderSelectors(){for(const [gid,slot] of [['p1Grid','p1'],['p2Grid','p2']]){const g=$(gid);g.innerHTML='';Object.values(window.BIBLE_ROSTER).forEach(c=>{const b=document.createElement('button');b.className='char-card'+(state.selected[slot]===c.id?' selected':'');b.innerHTML=`<div class="avatar ${c.id}">${c.name.slice(0,1)}</div><div class="char-main"><strong>${c.name}</strong><span>${c.role}</span><small>${c.anchor}</small></div><i>${state.selected[slot]===c.id?'READY':'选择'}</i>`;b.onclick=()=>{state.selected[slot]=c.id;renderSelectors();$('startBtn').disabled=!(state.selected.p1&&state.selected.p2)};g.appendChild(b)}$(slot+'Label').textContent=state.selected[slot]?window.BIBLE_ROSTER[state.selected[slot]].name:'未选择'}}
+function startMatch(){if(!state.selected.p1||!state.selected.p2)return;p1=fighter('p1',state.selected.p1,220,1);p2=fighter('p2',state.selected.p2,698,-1);state.running=true;state.over=false;state.shake=0;state.slow=0;state.particles=[];state.projectiles=[];state.rings=[];state.texts=[];state.timers.forEach(clearTimeout);state.timers=[];$('selectScreen').classList.add('hidden');$('battleScreen').classList.remove('hidden');$('result').classList.add('hidden');battleMeta();msg('FIGHT!')}
+function resetRound(){p1=fighter('p1',state.selected.p1,220,1);p2=fighter('p2',state.selected.p2,698,-1);state.running=true;state.over=false;state.shake=0;state.slow=0;state.particles=[];state.projectiles=[];state.rings=[];state.texts=[];state.timers.forEach(clearTimeout);state.timers=[];$('result').classList.add('hidden');msg('READY')}
+function backToSelect(){state.running=false;state.over=true;$('battleScreen').classList.add('hidden');$('selectScreen').classList.remove('hidden');$('result').classList.add('hidden');renderSelectors()}
+function attack(f){if(!state.running||f.stun>0||f.attackLock>0)return;const now=performance.now();if(now-f.lastAttack>620)f.attackStep=0;f.lastAttack=now;f.attackStep=f.attackStep%5+1;f.attackTimer=20;f.attackLock=14;const s=f.attackStep;later(()=>{if(!state.running||f.stun>0)return;const reach=s>=4?70:56,hb=box(f.x+(f.face>0?f.w-4:-reach+4),f.y+11,reach,56),e=opp(f);if(overlap(hb,box(e.x,e.y,e.w,e.h)))strike(f,e,[0,6,7,9,11,14][s]*f.power,s===5?14:7,s===5?12:7,'普攻')},62)}
+function skill(f){if(!state.running||f.stun>0||f.cdSkill>0)return;f.cdSkill=46;const e=opp(f),c=center(f);pop(c.x,c.y-20,f.skillName,'skill');if(f.id==='david'||f.id==='paul'){state.projectiles.push({owner:f.slot,x:c.x+f.face*22,y:f.y+27,vx:f.face*(f.id==='paul'?12:14),life:58,kind:f.id})}else if(f.id==='elijah'){state.projectiles.push({owner:f.slot,x:c.x+f.face*18,y:f.y+8,vx:f.face*9,vy:-1.5,life:42,kind:'fire'})}else if(f.id==='moses'){const hb=box(f.x+(f.face>0?30:-95),f.y-10,95,95);if(overlap(hb,box(e.x,e.y,e.w,e.h)))strike(f,e,17*f.power,15,12,'杖击');ring(c.x+f.face*70,c.y,40,'#9fb4c2')}else if(f.id==='samson'){const hb=box(f.x+(f.face>0?30:-110),f.y-14,110,92);if(overlap(hb,box(e.x,e.y,e.w,e.h)))strike(f,e,22*f.power,18,15,'爆发');burst(c.x+f.face*55,c.y,20,'#b28d62',4)}else if(f.id==='daniel'){f.inv=Math.max(f.inv,32);addUlt(f,12);burst(c.x,c.y,16,'#9eafca',2.8);ring(c.x,c.y,32,'#b8c9de')}}
+function dash(f){if(!state.running||f.stun>0||f.cdDash>0)return;f.cdDash=62;f.inv=15;f.vx=f.face*12;burst(f.x+f.w/2,f.y+f.h-4,8,f.color,2.5);pop(f.x,f.y-15,f.dashName,'skill');const e=opp(f);if(Math.abs(e.x-f.x)<105)strike(f,e,13*f.power,10,10,'突进')}
+function substitute(f){if(!state.running||f.sub<=0)return;f.sub--;f.inv=44;f.x=clamp(f.x-f.face*125,45,W-f.w-45);burst(f.x+f.w/2,f.y+f.h/2,15,'#c5b697',3);ring(f.x+f.w/2,f.y+f.h/2,28,'#e0c992');pop(f.x,f.y-15,'替身','skill')}
+function ultimate(f){if(!state.running||f.stun>0||f.ult<100)return;f.ult=0;state.shake=16;state.slow=34;flash();msg(f.ultName);const e=opp(f),t=center(e),power={samson:68,moses:60,elijah:62,daniel:56,paul:58,david:60}[f.id];burst(center(f).x,center(f).y,22,f.color,4);later(()=>{if(!state.running)return;state.slow=14;burst(t.x,t.y,32,'#fff0bd',6);ring(t.x,t.y,55,f.color);strike(f,e,power*f.power,26,25,'奥义')},360)}
+function strike(f,e,dmg,stun,knock,label){if(!state.running||e.inv>0)return;e.hp=clamp(e.hp-dmg,0,e.max);e.stun=Math.max(e.stun,stun);e.vx+=f.face*knock;e.vy-=2;state.shake=Math.max(state.shake,dmg>25?9:4);addUlt(f,dmg>25?10:4);f.combo++;f.comboTimer=48;pop(e.x+e.w/2,e.y-14,'-'+Math.ceil(dmg),'damage');pop(e.x+e.w/2,e.y+e.h+4,label,'skill');burst(e.x+e.w/2,e.y+e.h/2,dmg>25?18:8,dmg>25?'#f4d27e':f.color,3.5);if(e.hp<=0)finishRound(f)}
+function finishRound(w){if(state.over)return;state.over=true;state.running=false;const l=opp(w),wn=window.BIBLE_ROSTER[w.id].name,ln=window.BIBLE_ROSTER[l.id].name;msg(`${w.slot==='p1'?'PLAYER 1':'PLAYER 2'} 胜利`);$('resultTitle').textContent=`${w.slot==='p1'?'P1':'P2'} 胜利 · ${wn}`;$('resultCopy').textContent=`${wn} 击败了 ${ln}。技能主题来自人物的圣经身份、经历与关键事件；战斗数值属于游戏化表达。`;later(()=>$('result').classList.remove('hidden'),350)}
+function hurt(f,dmg,src){if(!state.running||f.inv>0||f.stun>0)return;f.hp=clamp(f.hp-dmg,0,f.max);f.inv=22;f.combo=0;src.comboTimer=0;state.shake=6;burst(f.x+f.w/2,f.y+f.h/2,10,'#9e6252',2.5);pop(f.x+f.w/2,f.y-12,'-'+Math.ceil(dmg),'enemy');addUlt(src,7);if(f.hp<=0)finishRound(src)}
+function updateFighter(f,s){f.inv=Math.max(0,f.inv-s);f.attackTimer=Math.max(0,f.attackTimer-s);f.attackLock=Math.max(0,f.attackLock-s);f.cdSkill=Math.max(0,f.cdSkill-s);f.cdDash=Math.max(0,f.cdDash-s);f.stun=Math.max(0,f.stun-s);f.comboTimer=Math.max(0,f.comboTimer-1);if(f.comboTimer<=0)f.combo=0;if(f.stun>0)f.vx*=.78;else{const l=keys[f.slot==='p1'?'a':'arrowleft'],r=keys[f.slot==='p1'?'d':'arrowright'];if(l&&!r)f.vx=-f.speed;else if(r&&!l)f.vx=f.speed;else f.vx*=.74;if(Math.abs(f.vx)>.1)f.face=Math.sign(f.vx);const j=f.slot==='p1'?'w':'arrowup';if(keys[j]&&f.onGround){f.vy=-f.jump;f.onGround=false;keys[j]=false}}f.vy+=.58*s;f.x+=f.vx*s;f.y+=f.vy*s;if(f.y+f.h>=GROUND){f.y=GROUND-f.h;f.vy=0;f.onGround=true}f.x=clamp(f.x,25,W-f.w-25);addUlt(f,.028*s)}
+function updateProjectiles(s){for(const q of state.projectiles){q.x+=q.vx*s;q.y+=(q.vy||0)*s;q.life-=s;const e=q.owner==='p1'?p2:p1,owner=q.owner==='p1'?p1:p2;if(q.life>0&&overlap(box(q.x-7,q.y-7,14,14),box(e.x,e.y,e.w,e.h))){strike(owner,e,(q.kind==='fire'?24:20)*owner.power,13,11,q.kind==='fire'?'火焰':'精准');q.life=0}}state.projectiles=state.projectiles.filter(q=>q.life>0&&q.x>-50&&q.x<W+50)}
+function fx(){for(const x of state.particles){x.x+=x.vx;x.y+=x.vy;x.vy+=.09;x.vx*=.985;x.life--}state.particles=state.particles.filter(x=>x.life>0);for(const x of state.texts){x.y-=.55;x.life--}state.texts=state.texts.filter(x=>x.life>0);for(const x of state.rings){x.r+=2.4;x.life--}state.rings=state.rings.filter(x=>x.life>0)}
+function hud(){if(!p1||!p2)return;$('p1Name').textContent=`P1 · ${window.BIBLE_ROSTER[p1.id].name}`;$('p2Name').textContent=`P2 · ${window.BIBLE_ROSTER[p2.id].name}`;$('p1HpText').textContent=`${Math.ceil(p1.hp)} / ${p1.max}`;$('p2HpText').textContent=`${Math.ceil(p2.hp)} / ${p2.max}`;$('p1HpBar').style.width=`${p1.hp/p1.max*100}%`;$('p2HpBar').style.width=`${p2.hp/p2.max*100}%`;$('p1UltBar').style.width=`${p1.ult}%`;$('p2UltBar').style.width=`${p2.ult}%`;$('p1Combo').classList.toggle('show',p1.combo>=2);$('p2Combo').classList.toggle('show',p2.combo>=2);$('p1Combo').querySelector('strong').textContent=p1.combo;$('p2Combo').querySelector('strong').textContent=p2.combo}
+function battleMeta(){const a=window.BIBLE_ROSTER[p1.id],b=window.BIBLE_ROSTER[p2.id];$('fightLoreTitle').textContent=`${a.name} vs ${b.name}`;$('fightLore').innerHTML=`<div><b>${a.name}</b><span>${a.role}</span><small>${a.facts.join(' · ')}</small><em>${a.anchor}</em></div><div><b>${b.name}</b><span>${b.role}</span><small>${b.facts.join(' · ')}</small><em>${b.anchor}</em></div>`}
+function drawArena(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1c2330');g.addColorStop(.55,'#687375');g.addColorStop(1,'#2b241e');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#404a4c';ctx.fillRect(0,325,W,113);ctx.fillStyle='#594b3c';ctx.fillRect(0,GROUND,W,H-GROUND);ctx.fillStyle='#2e2620';ctx.fillRect(0,GROUND,W,5);ctx.fillStyle='#a58a68';for(let i=0;i<11;i++)ctx.fillRect(36+i*92,356+(i%3)*12,46,4);ctx.fillStyle='#d2b276';ctx.font='900 14px Georgia';ctx.fillText('BIBLE FIGHTER ARENA',34,145);ctx.font='10px sans-serif';ctx.fillStyle='#cbb893';ctx.fillText('LOCAL 2 PLAYER · FREE BATTLE',34,160)}
+function drawFighter(f){if(f.inv>0&&Math.floor(f.inv/3)%2===0)return;ctx.save();ctx.translate(Math.round(f.x+f.w/2),Math.round(f.y+f.h));ctx.scale(f.face,1);const body=f.color;ctx.fillStyle=body;if(f.type==='david'){ctx.fillRect(-17,-54,34,46);ctx.fillStyle='#caa477';ctx.fillRect(-13,-77,26,23);ctx.fillStyle='#3b2418';ctx.fillRect(-15,-82,30,9)}else if(f.type==='moses'){ctx.fillRect(-18,-58,36,48);ctx.fillStyle='#c89c70';ctx.fillRect(-13,-80,26,22);ctx.fillStyle='#7b6a4f';ctx.fillRect(22,-72,4,70)}else if(f.type==='samson'){ctx.fillRect(-20,-56,40,49);ctx.fillStyle='#c99b6d';ctx.fillRect(-14,-80,28,23);ctx.fillStyle='#4a2c19';ctx.fillRect(-20,-78,40,18)}else if(f.type==='daniel'){ctx.fillRect(-17,-55,34,46);ctx.fillStyle='#b98f68';ctx.fillRect(-13,-79,26,23);ctx.fillStyle='#7a6e58';ctx.fillRect(-18,-82,36,7)}else if(f.type==='elijah'){ctx.fillRect(-18,-58,36,49);ctx.fillStyle='#c2946d';ctx.fillRect(-13,-80,26,23);ctx.fillStyle='#5d3924';ctx.fillRect(-20,-81,40,10)}else{ctx.fillRect(-17,-55,34,45);ctx.fillStyle='#c4946a';ctx.fillRect(-13,-78,26,23);ctx.fillStyle='#2d241d';ctx.fillRect(-16,-82,32,9)}ctx.fillStyle=f.color;ctx.fillRect(13,-48,22,5);if(f.attackTimer>0){ctx.fillStyle='#f0dbac';ctx.fillRect(18,-50,30,5)}ctx.restore()}
+function drawProjectiles(){for(const q of state.projectiles){ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.life*.3);ctx.fillStyle=q.kind==='fire'?'#ef9c5e':'#2b2823';ctx.fillRect(-5,-5,10,10);ctx.strokeStyle=q.kind==='fire'?'#ffd37c':'#e0c286';ctx.beginPath();ctx.moveTo(-16,0);ctx.lineTo(16,0);ctx.stroke();ctx.restore()}}
+function drawFx(){state.particles.forEach(x=>{ctx.fillStyle=x.c;ctx.fillRect(x.x,x.y,x.s||3,x.s||3)});state.rings.forEach(x=>{ctx.strokeStyle=x.c;ctx.globalAlpha=Math.max(0,x.life/18);ctx.lineWidth=2;ctx.beginPath();ctx.arc(x.x,x.y,x.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1});ctx.font='bold 14px sans-serif';ctx.textAlign='center';state.texts.forEach(x=>{ctx.fillStyle=x.kind==='damage'?'#fff0bd':x.kind==='enemy'?'#e28e76':'#f0d5a1';ctx.globalAlpha=Math.max(0,x.life/38);ctx.fillText(x.t,x.x,x.y)});ctx.globalAlpha=1;ctx.textAlign='left'}
+function render(){ctx.save();if(state.shake>0){ctx.translate((Math.random()-.5)*state.shake,(Math.random()-.5)*state.shake);state.shake--}drawArena();drawProjectiles();if(p1)drawFighter(p1);if(p2)drawFighter(p2);drawFx();ctx.restore()}
+function loop(){const s=state.slow>0?.45:1;if(state.running&&!state.over){state.slow=Math.max(0,state.slow-1);updateFighter(p1,s);updateFighter(p2,s);updateProjectiles(s);fx()}render();hud();requestAnimationFrame(loop)}
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(RELEVANT.has(k))e.preventDefault();keys[k]=true;if(e.repeat||!state.running||state.over)return;for(const slot of ['p1','p2'])for(const action of Object.keys(ACTIONS[slot]))if(k===ACTIONS[slot][action]){const f=slot==='p1'?p1:p2;if(action==='attack')attack(f);if(action==='skill')skill(f);if(action==='dash')dash(f);if(action==='sub')substitute(f);if(action==='ult')ultimate(f)}});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const a=b.dataset.action,f=a.startsWith('p1-')?p1:p2;if(a.endsWith('attack'))attack(f);if(a.endsWith('skill'))skill(f);if(a.endsWith('dash'))dash(f);if(a.endsWith('sub'))substitute(f);if(a.endsWith('ult'))ultimate(f)}));
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key,down=e=>{e.preventDefault();keys[k]=true;b.classList.add('pressed')},up=e=>{e.preventDefault();keys[k]=false;b.classList.remove('pressed')};b.addEventListener('pointerdown',down);['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,up))});
+$('startBtn').onclick=startMatch;$('rematchBtn').onclick=resetRound;$('changeBtn').onclick=backToSelect;$('aboutBtn').onclick=()=>$('aboutDialog').showModal();$('closeAbout').onclick=()=>$('aboutDialog').close();renderSelectors();loop();
