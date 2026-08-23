@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#120f0a" />
+  <title>约谷 · Bible Fighter Prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><div class="eyebrow">BIBLE FIGHTER · PROTOTYPE 01</div><h1>约谷 <span>·</span> 大卫的试炼</h1></div>
+      <button id="storyBtn" class="ghost-btn">人物档案</button>
+    </header>
+    <section class="game-wrap">
+      <canvas id="game" width="960" height="540" aria-label="大卫与歌利亚战斗场景"></canvas>
+      <div class="hud">
+        <div class="hp-block player-hp"><div class="name-row"><strong>大卫</strong><span id="playerHpText">100 / 100</span></div><div class="bar"><i id="playerHpBar"></i></div></div>
+        <div class="chapter"><span>以拉谷</span><small>1 · 少年与巨人</small></div>
+        <div class="hp-block enemy-hp"><div class="name-row"><strong>歌利亚</strong><span id="enemyHpText">180 / 180</span></div><div class="bar"><i id="enemyHpBar"></i></div></div>
+      </div>
+      <div class="tips">A / D 移动 · W 跳跃 · J 普攻 · K 投石索 · L 冲锋 · I 替身 · O 奥义</div>
+      <div id="flash" class="flash"></div>
+      <div id="result" class="result hidden"><div class="result-card"><div class="result-kicker">战斗结束</div><h2 id="resultTitle">巨人倒下了</h2><p id="resultCopy"></p><div class="unlock">已解锁：<strong>大卫 · 歌利亚之战</strong></div><button id="restartBtn" class="primary-btn">再次挑战</button></div></div>
+    </section>
+    <section class="bottom-grid">
+      <article class="card move-card"><div class="card-head"><span>技能</span><strong>David Kit</strong></div><div class="moves">
+        <div><kbd>J</kbd><span><b>牧羊人的短击</b><small>三连普攻，可把敌人打浮空</small></span></div>
+        <div><kbd>K</kbd><span><b>投石索</b><small>远距离精准打击，体现牧羊人的工具</small></span></div>
+        <div><kbd>L</kbd><span><b>奔跑突进</b><small>短距离冲刺，靠近或脱离巨人</small></span></div>
+        <div><kbd>O</kbd><span><b>五块石头</b><small>奥义：进入歌利亚之战的镜头叙事</small></span></div>
+      </div></article>
+      <article class="card lore-card"><div class="card-head"><span>战斗中的圣经线索</span><strong>1 Samuel 17</strong></div><p>大卫本来是牧羊人；他来到以拉谷时，以色列军队正面对非利士人的挑战。游戏里的投石索、巨人和战场，都取材自《撒母耳记上》第17章。</p><button id="verseBtn" class="link-btn">查看经文提示 →</button></article>
+    </section>
+  </main>
+  <dialog id="storyDialog"><div class="dialog-inner"><button id="closeDialog" class="close-btn" aria-label="关闭">×</button><div class="eyebrow">人物档案 · DAVID</div><h2>大卫：从牧羊人到王</h2><p>这款原型不把大卫设计成“神话英雄”。他仍然是圣经中真实的人物；战斗技能只是把经文中的身份、经历和关键事件转化成可玩的机制。</p><div class="facts"><div><b>牧羊人</b><span>他的早年经历与牧羊有关。</span></div><div><b>投石索</b><span>他用自己熟悉的工具面对歌利亚。</span></div><div><b>勇气</b><span>他在众人恐惧时愿意迎战。</span></div></div><div class="source-note">经文锚点：撒母耳记上 17 章。游戏中的数值、连招和镜头表现属于游戏化设计，不等同于经文原文。</div></div></dialog>
+  <script src="game.js"></script>
+</body>
+</html>
