@@ -4,58 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#090807" />
-  <meta name="description" content="Bible Fighter · 2.5D 圣经人物格斗游戏原型" />
-  <title>约谷 · Bible Fighter</title>
+  <meta name="description" content="Bible Fighter · 2P 圣经人物格斗游戏原型" />
+  <title>约谷 · Bible Fighter 2P</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
-      <div><div class="eyebrow">BIBLE FIGHTER · PROTOTYPE 03</div><h1>约谷 <span>·</span> 大卫的试炼</h1></div>
-      <button id="storyBtn" class="ghost-btn">人物档案</button>
+      <div><div class="eyebrow">BIBLE FIGHTER · 2 PLAYER</div><h1>约谷 <span>·</span> 圣经人物格斗</h1></div>
+      <div class="top-actions"><span class="mode-badge">LOCAL 2P</span><button id="aboutBtn" class="ghost-btn">设计说明</button></div>
     </header>
 
-    <section class="game-wrap" id="gameWrap">
-      <canvas id="game" width="960" height="540" aria-label="大卫与歌利亚战斗场景"></canvas>
-      <div class="hud">
-        <div class="fighter-panel">
-          <div class="name-row"><strong>大卫</strong><span id="playerHpText">100 / 100</span></div>
-          <div class="bar"><i id="playerHpBar"></i></div>
-          <div class="resource"><span>决意</span><i id="ultBar"></i></div>
-        </div>
-        <div class="chapter"><span>以拉谷</span><small>01 · 少年与巨人</small></div>
-        <div class="fighter-panel enemy-hp"><div class="name-row"><strong>歌利亚</strong><span id="enemyHpText">180 / 180</span></div><div class="bar"><i id="enemyHpBar"></i></div><div class="stance" id="enemyStance">巨人 · 压迫</div></div>
+    <section id="selectScreen" class="select-screen">
+      <div class="select-hero"><div><div class="eyebrow">选择你的战士</div><h2>两位玩家，同屏对决。</h2><p>不再以章节为主入口。圣经人物本身就是角色：身份、经历、工具与关键事件被转化成技能和战斗风格。</p></div><button id="startBtn" class="primary-btn big" disabled>开始对战</button></div>
+      <div class="player-selects">
+        <div class="picker p1-picker"><div class="picker-head"><strong>PLAYER 1</strong><span id="p1Label">未选择</span></div><div id="p1Grid" class="char-grid"></div></div>
+        <div class="picker p2-picker"><div class="picker-head"><strong>PLAYER 2</strong><span id="p2Label">未选择</span></div><div id="p2Grid" class="char-grid"></div></div>
       </div>
-      <div class="combo-hud" id="comboHud"><strong id="comboCount">0</strong><span>连击</span></div>
-      <div class="center-message" id="centerMessage"></div>
-      <div id="flash" class="flash"></div>
-      <div class="tips">键盘：A/D 移动 · W 跳跃 · J 普攻 · K 投石索 · L 冲锋 · I 替身 · O 奥义</div>
-      <div class="mobile-controls" aria-label="触控操作"><div class="move-pad"><button data-key="w">↑</button><button data-key="a">←</button><button data-key="d">→</button></div><div class="skill-pad"><button class="skill" data-action="attack"><b>普</b><small>J</small></button><button class="skill" data-action="sling"><b>石</b><small>K</small></button><button class="skill" data-action="dash"><b>冲</b><small>L</small></button><button class="skill special" data-action="substitute"><b>替</b><small>I</small></button><button class="skill ultimate" data-action="ultimate"><b>奥</b><small>O</small></button></div></div>
-      <div id="result" class="result hidden"><div class="result-card"><div class="result-kicker">战斗结束</div><h2 id="resultTitle">巨人倒下了</h2><p id="resultCopy"></p><div class="unlock">已解锁：<strong>大卫 · 歌利亚之战</strong></div><button id="restartBtn" class="primary-btn">再次挑战</button></div></div>
+      <div class="control-note"><b>P1</b> WASD + J/K/L/I/O　 <b>P2</b> 方向键 + 1/2/3/4/5　·　支持同键盘双人</div>
     </section>
 
-    <section class="bottom-grid">
-      <article class="card"><div class="card-head"><span>技能组</span><strong>DAVID · 牧羊人</strong></div><div class="moves"><div><kbd>J</kbd><span><b>牧羊人的短击</b><small>5A 连段；后段更强，适合接技能</small></span></div><div><kbd>K</kbd><span><b>投石索</b><small>远程起手；命中会积累“决意”</small></span></div><div><kbd>L</kbd><span><b>奔跑突进</b><small>短无敌位移；用于切入与脱离</small></span></div><div><kbd>I</kbd><span><b>替身</b><small>2 次储备；打断压制并重新找位置</small></span></div><div class="wide"><kbd>O</kbd><span><b>五块石头 · 奥义</b><small>决意 100% 可用；用剧情镜头完成核心记忆点</small></span></div></div></article>
-      <article class="card lore-card"><div class="card-head"><span>战斗中的圣经线索</span><strong>1 SAMUEL 17</strong></div><p>大卫来到以拉谷时，以色列军队正在面对非利士人的挑战。游戏把牧羊、投石索、歌利亚与战场空间转译成动作系统；数值、连招和镜头属于游戏化表达。</p><div class="lore-tags"><span>牧羊人</span><span>投石索</span><span>歌利亚</span><span>以拉谷</span></div><button id="verseBtn" class="link-btn">查看人物档案 →</button></article>
+    <section id="battleScreen" class="battle-screen hidden">
+      <div class="game-wrap" id="gameWrap">
+        <canvas id="game" width="960" height="540" aria-label="两名圣经人物格斗场景"></canvas>
+        <div class="hud">
+          <div class="fighter-panel p1-panel"><div class="name-row"><strong id="p1Name">P1</strong><span id="p1HpText">100 / 100</span></div><div class="bar"><i id="p1HpBar"></i></div><div class="resource"><span>决意</span><i id="p1UltBar"></i></div></div>
+          <div class="round-info"><b>自由对战</b><small>BEST OF 3</small></div>
+          <div class="fighter-panel p2-panel"><div class="name-row"><strong id="p2Name">P2</strong><span id="p2HpText">100 / 100</span></div><div class="bar"><i id="p2HpBar"></i></div><div class="resource"><span>决意</span><i id="p2UltBar"></i></div></div>
+        </div>
+        <div id="p1Combo" class="combo-hud left"><strong>0</strong><span>连击</span></div><div id="p2Combo" class="combo-hud right"><strong>0</strong><span>连击</span></div>
+        <div id="centerMessage" class="center-message">ROUND 1</div><div id="flash" class="flash"></div>
+        <div class="arena-hint">P1：WASD / J K L I O　　P2：↑↓←→ / 1 2 3 4 5</div>
+        <div class="mobile-controls dual">
+          <div class="mobile-side p1-touch"><div class="touch-title">P1</div><div class="move-pad"><button data-key="w">↑</button><button data-key="a">←</button><button data-key="d">→</button></div><div class="touch-skills"><button data-action="p1-attack">普</button><button data-action="p1-skill">技</button><button data-action="p1-dash">冲</button><button data-action="p1-sub">替</button><button data-action="p1-ult">奥</button></div></div>
+          <div class="mobile-side p2-touch"><div class="touch-title">P2</div><div class="move-pad"><button data-key="arrowup">↑</button><button data-key="arrowleft">←</button><button data-key="arrowright">→</button></div><div class="touch-skills"><button data-action="p2-attack">普</button><button data-action="p2-skill">技</button><button data-action="p2-dash">冲</button><button data-action="p2-sub">替</button><button data-action="p2-ult">奥</button></div></div>
+        </div>
+        <div id="result" class="result hidden"><div class="result-card"><div class="result-kicker">MATCH COMPLETE</div><h2 id="resultTitle">P1 胜利</h2><p id="resultCopy"></p><div class="result-actions"><button id="rematchBtn" class="primary-btn">再战</button><button id="changeBtn" class="ghost-btn">换角色</button></div></div></div>
+      </div>
+      <section class="battle-meta"><article class="card fighter-info"><div class="card-head"><span>角色信息</span><strong id="fightLoreTitle">P1 VS P2</strong></div><div id="fightLore" class="fight-lore"></div></article><article class="card"><div class="card-head"><span>操作</span><strong>2 PLAYER LOCAL</strong></div><div class="control-grid"><div><b>P1</b><span>WASD</span><small>移动 / 跳跃</small><span>J K L I O</span><small>普攻 / 技能 / 冲锋 / 替身 / 奥义</small></div><div><b>P2</b><span>方向键</span><small>移动 / 跳跃</small><span>1 2 3 4 5</span><small>普攻 / 技能 / 冲锋 / 替身 / 奥义</small></div></div></article></section>
     </section>
-
-    <section class="card roster-card"><div class="card-head"><span>圣经人物阵容 · 架构预览</span><strong>6 PERSONAS</strong></div><div id="roster" class="roster-grid"></div><p class="roster-note">角色资料已与战斗逻辑分离。这样新增人物时，可以先审核经文依据，再独立设计战斗风格。</p></section>
   </main>
 
-  <dialog id="storyDialog"><div class="dialog-inner"><button id="closeDialog" class="close-btn" aria-label="关闭">×</button><div class="eyebrow">人物档案 · DAVID</div><h2>大卫：从牧羊人到王</h2><p>这个原型不把大卫当成“神话英雄”。角色技能尽量从经文中的身份、经历和关键事件出发；凡是属于游戏化的数值、连招与镜头表现，都会与经文区分。</p><div class="facts"><div><b>牧羊人</b><span>早年经历与牧羊有关，熟悉旷野与羊群。</span></div><div><b>投石索</b><span>他以熟悉的工具面对歌利亚，而不是依靠华丽武器。</span></div><div><b>勇气</b><span>他在众人恐惧时选择迎战，并把信心放在神身上。</span></div></div><div class="source-note">经文锚点：撒母耳记上 17 章。下一阶段会继续建立人物成长线与章节解锁。</div></div></dialog>
-
+  <dialog id="aboutDialog"><div class="dialog-inner"><button id="closeAbout" class="close-btn">×</button><div class="eyebrow">DESIGN PRINCIPLES</div><h2>让圣经人物成为玩法</h2><p>本版本完全取消章节模式，把核心入口变成双人本地对战。技能会围绕人物在圣经中的身份、经历、工具与关键事件设计；伤害、连招、冷却、无敌帧和镜头语言属于游戏化表达，不等同于经文原文。</p><p>角色资料与战斗逻辑分离，便于继续加入新人物并进行经文审核。</p></div></dialog>
   <script src="data/characters.js"></script>
   <script src="game.js"></script>
-  <script>
-    const roster = document.getElementById('roster');
-    if (window.BIBLE_ROSTER && roster) {
-      Object.values(window.BIBLE_ROSTER).forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'roster-item' + (c.id === 'david' ? ' active' : '');
-        card.innerHTML = `<div class="roster-top"><strong>${c.name}</strong><span>${c.status}</span></div><b>${c.title}</b><small>${c.role}</small><p>${c.facts.slice(0,2).join(' · ')}</p><em>${c.anchor}</em>`;
-        roster.appendChild(card);
-      });
-    }
-  </script>
 </body>
 </html>
