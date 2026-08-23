@@ -14,39 +14,21 @@
       <div><div class="eyebrow">BIBLE FIGHTER · 2 PLAYER</div><h1>约谷 <span>·</span> 圣经人物格斗</h1></div>
       <div class="top-actions"><span class="mode-badge">LOCAL 2P</span><button id="aboutBtn" class="ghost-btn">设计说明</button></div>
     </header>
-
     <section id="selectScreen" class="select-screen">
       <div class="select-hero"><div><div class="eyebrow">选择你的战士</div><h2>两位玩家，同屏对决。</h2><p>不再以章节为主入口。圣经人物本身就是角色：身份、经历、工具与关键事件被转化成技能和战斗风格。</p></div><button id="startBtn" class="primary-btn big" disabled>开始对战</button></div>
-      <div class="player-selects">
-        <div class="picker p1-picker"><div class="picker-head"><strong>PLAYER 1</strong><span id="p1Label">未选择</span></div><div id="p1Grid" class="char-grid"></div></div>
-        <div class="picker p2-picker"><div class="picker-head"><strong>PLAYER 2</strong><span id="p2Label">未选择</span></div><div id="p2Grid" class="char-grid"></div></div>
-      </div>
+      <div class="player-selects"><div class="picker p1-picker"><div class="picker-head"><strong>PLAYER 1</strong><span id="p1Label">未选择</span></div><div id="p1Grid" class="char-grid"></div></div><div class="picker p2-picker"><div class="picker-head"><strong>PLAYER 2</strong><span id="p2Label">未选择</span></div><div id="p2Grid" class="char-grid"></div></div></div>
       <div class="control-note"><b>P1</b> WASD + J/K/L/I/O　 <b>P2</b> 方向键 + 1/2/3/4/5　·　支持同键盘双人</div>
     </section>
-
     <section id="battleScreen" class="battle-screen hidden">
-      <div class="game-wrap" id="gameWrap">
-        <canvas id="game" width="960" height="540" aria-label="两名圣经人物格斗场景"></canvas>
-        <div class="hud">
-          <div class="fighter-panel p1-panel"><div class="name-row"><strong id="p1Name">P1</strong><span id="p1HpText">100 / 100</span></div><div class="bar"><i id="p1HpBar"></i></div><div class="resource"><span>决意</span><i id="p1UltBar"></i></div></div>
-          <div class="round-info"><b>自由对战</b><small>BEST OF 3</small></div>
-          <div class="fighter-panel p2-panel"><div class="name-row"><strong id="p2Name">P2</strong><span id="p2HpText">100 / 100</span></div><div class="bar"><i id="p2HpBar"></i></div><div class="resource"><span>决意</span><i id="p2UltBar"></i></div></div>
-        </div>
-        <div id="p1Combo" class="combo-hud left"><strong>0</strong><span>连击</span></div><div id="p2Combo" class="combo-hud right"><strong>0</strong><span>连击</span></div>
-        <div id="centerMessage" class="center-message">ROUND 1</div><div id="flash" class="flash"></div>
-        <div class="arena-hint">P1：WASD / J K L I O　　P2：↑↓←→ / 1 2 3 4 5</div>
-        <div class="mobile-controls dual">
-          <div class="mobile-side p1-touch"><div class="touch-title">P1</div><div class="move-pad"><button data-key="w">↑</button><button data-key="a">←</button><button data-key="d">→</button></div><div class="touch-skills"><button data-action="p1-attack">普</button><button data-action="p1-skill">技</button><button data-action="p1-dash">冲</button><button data-action="p1-sub">替</button><button data-action="p1-ult">奥</button></div></div>
-          <div class="mobile-side p2-touch"><div class="touch-title">P2</div><div class="move-pad"><button data-key="arrowup">↑</button><button data-key="arrowleft">←</button><button data-key="arrowright">→</button></div><div class="touch-skills"><button data-action="p2-attack">普</button><button data-action="p2-skill">技</button><button data-action="p2-dash">冲</button><button data-action="p2-sub">替</button><button data-action="p2-ult">奥</button></div></div>
-        </div>
+      <div class="game-wrap" id="gameWrap"><canvas id="game" width="960" height="540" aria-label="两名圣经人物格斗场景"></canvas>
+        <div class="hud"><div class="fighter-panel p1-panel"><div class="name-row"><strong id="p1Name">P1</strong><span id="p1HpText">100 / 100</span></div><div class="bar"><i id="p1HpBar"></i></div><div class="resource"><span>决意</span><i id="p1UltBar"></i></div></div><div class="round-info"><b>第 1 回合</b><small>BO3 · 0-0</small></div><div class="fighter-panel p2-panel"><div class="name-row"><strong id="p2Name">P2</strong><span id="p2HpText">100 / 100</span></div><div class="bar"><i id="p2HpBar"></i></div><div class="resource"><span>决意</span><i id="p2UltBar"></i></div></div></div>
+        <div id="p1Combo" class="combo-hud left"><strong>0</strong><span>连击</span></div><div id="p2Combo" class="combo-hud right"><strong>0</strong><span>连击</span></div><div id="centerMessage" class="center-message">ROUND 1</div><div id="flash" class="flash"></div><div class="arena-hint">P1：WASD / J K L I O　　P2：↑↓←→ / 1 2 3 4 5</div>
+        <div class="mobile-controls dual"><div class="mobile-side p1-touch"><div class="touch-title">P1</div><div class="move-pad"><button data-key="w">↑</button><button data-key="a">←</button><button data-key="d">→</button></div><div class="touch-skills"><button data-action="p1-attack">普</button><button data-action="p1-skill">技</button><button data-action="p1-dash">冲</button><button data-action="p1-sub">替</button><button data-action="p1-ult">奥</button></div></div><div class="mobile-side p2-touch"><div class="touch-title">P2</div><div class="move-pad"><button data-key="arrowup">↑</button><button data-key="arrowleft">←</button><button data-key="arrowright">→</button></div><div class="touch-skills"><button data-action="p2-attack">普</button><button data-action="p2-skill">技</button><button data-action="p2-dash">冲</button><button data-action="p2-sub">替</button><button data-action="p2-ult">奥</button></div></div></div>
         <div id="result" class="result hidden"><div class="result-card"><div class="result-kicker">MATCH COMPLETE</div><h2 id="resultTitle">P1 胜利</h2><p id="resultCopy"></p><div class="result-actions"><button id="rematchBtn" class="primary-btn">再战</button><button id="changeBtn" class="ghost-btn">换角色</button></div></div></div>
       </div>
       <section class="battle-meta"><article class="card fighter-info"><div class="card-head"><span>角色信息</span><strong id="fightLoreTitle">P1 VS P2</strong></div><div id="fightLore" class="fight-lore"></div></article><article class="card"><div class="card-head"><span>操作</span><strong>2 PLAYER LOCAL</strong></div><div class="control-grid"><div><b>P1</b><span>WASD</span><small>移动 / 跳跃</small><span>J K L I O</span><small>普攻 / 技能 / 冲锋 / 替身 / 奥义</small></div><div><b>P2</b><span>方向键</span><small>移动 / 跳跃</small><span>1 2 3 4 5</span><small>普攻 / 技能 / 冲锋 / 替身 / 奥义</small></div></div></article></section>
     </section>
   </main>
-
-  <dialog id="aboutDialog"><div class="dialog-inner"><button id="closeAbout" class="close-btn">×</button><div class="eyebrow">DESIGN PRINCIPLES</div><h2>让圣经人物成为玩法</h2><p>本版本完全取消章节模式，把核心入口变成双人本地对战。技能会围绕人物在圣经中的身份、经历、工具与关键事件设计；伤害、连招、冷却、无敌帧和镜头语言属于游戏化表达，不等同于经文原文。</p><p>角色资料与战斗逻辑分离，便于继续加入新人物并进行经文审核。</p></div></dialog>
-  <script src="data/characters.js"></script>
-  <script src="game.js"></script>
-</body>
-</html>
+  <dialog id="aboutDialog"><div class="dialog-inner"><button id="closeAbout" class="close-btn">×</button><div class="eyebrow">DESIGN PRINCIPLES</div><h2>让圣经人物成为玩法</h2><p>本版本以双人本地对战为核心。技能围绕人物在圣经中的身份、经历、工具与关键事件设计；伤害、连招、冷却、无敌帧和镜头语言属于游戏化表达，不等同于经文原文。</p><p>角色资料与战斗逻辑分离，便于继续加入新人物并进行经文审核。</p></div></dialog>
+  <script src="data/characters.js"></script><script src="game2.js"></script>
+</body></html>
