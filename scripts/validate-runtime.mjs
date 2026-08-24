@@ -35,8 +35,9 @@ for (const marker of ['id="selectScreen"', 'id="battleScreen"', 'id="game"', 'id
   if (!html.includes(marker)) fail(`missing required UI marker: ${marker}`);
 }
 
-for (const marker of ['game20.js', 'mission', 'skill']) {
-  if (!html.includes(marker) && marker !== 'game20.js') fail(`playtest entry missing combat HUD marker: ${marker}`);
+const game19 = readFileSync(resolve(root, 'game19.js'), 'utf8');
+if (!game19.includes('game20.js') || !game19.includes('game20.css') || !game19.includes('BIBLE_FIGHTER_HUD_READY')) {
+  fail('game19.js is not wired to dynamically load the combat HUD layer');
 }
 if (!existsSync(resolve(root, 'game20.js')) || !existsSync(resolve(root, 'game20.css'))) {
   fail('combat HUD assets are missing');
@@ -48,4 +49,4 @@ for (const required of ['playtest.html', 'game20.js', 'game20.css', 'data/**/*',
   if (!buildFiles.includes(required)) fail(`electron-builder package files omit ${required}`);
 }
 
-console.log(`Runtime validation passed: ${scripts.length} runtime scripts, packaged combat HUD intact.`);
+console.log(`Runtime validation passed: ${scripts.length} entry scripts, dynamically loaded combat HUD intact.`);
