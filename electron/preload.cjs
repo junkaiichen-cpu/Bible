@@ -24,6 +24,12 @@ const checkForUpdate = async () => {
   } catch (error) { return { error:String(error), available:false, version:APP_VERSION }; }
 };
 
+const syncVersionUi = () => {
+  document.title = `约谷 · Bible Fighter ${APP_VERSION}`;
+  const eyebrow = [...document.querySelectorAll('.eyebrow')].find(el => /BIBLE FIGHTER/.test(el.textContent||''));
+  if (eyebrow) eyebrow.textContent = `BIBLE FIGHTER · ${APP_VERSION} · LOCAL 2P`;
+};
+
 const mountUpdateCenter = () => {
   const head = document.head || document.documentElement;
   const body = document.body || document.documentElement;
@@ -43,8 +49,9 @@ const mountDavidCombatPolish = () => {
   body.appendChild(script);
 };
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { mountUpdateCenter(); mountDavidCombatPolish(); }, { once:true });
-else { mountUpdateCenter(); mountDavidCombatPolish(); }
+const boot = () => { syncVersionUi(); mountUpdateCenter(); mountDavidCombatPolish(); };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
+else boot();
 
 contextBridge.exposeInMainWorld('BIBLE_FIGHTER_DESKTOP', {
   version: APP_VERSION,
