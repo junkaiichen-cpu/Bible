@@ -1,7 +1,7 @@
 {
   "name": "bible-fighter",
-  "version": "0.2.0",
-  "description": "Bible Fighter · Windows playable 2P fighting game · Build 11 combat feel",
+  "version": "0.3.0",
+  "description": "Bible Fighter · Windows playable 2P fighting game · Build 12 frame combat",
   "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
@@ -20,6 +20,7 @@
       "style.css",
       "game7.js",
       "game8.js",
+      "game9.js",
       "game8.css",
       "data/**/*",
       "electron/**/*"
