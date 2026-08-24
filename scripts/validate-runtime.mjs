@@ -18,7 +18,18 @@ for (const src of styles) { if (/^https?:\/\//i.test(src) || src.startsWith('//'
 for (const marker of ['id="selectScreen"','id="battleScreen"','id="game"','id="startBtn"']) if (!html.includes(marker)) fail(`missing required UI marker: ${marker}`);
 const packageJson = JSON.parse(readFileSync(resolve(root,'package.json'),'utf8')); const buildFiles = packageJson.build?.files ?? [];
 for (const required of ['playtest.html','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','game29.js','game30.js','game20.css','game21.css','game22.css','game23.css','data/**/*','electron/**/*']) if (!buildFiles.includes(required)) fail(`electron-builder package files omit ${required}`);
-for (const [file, marker, label] of [['game23.js','BIBLE_FIGHTER_BRIEFING_READY','battle briefing'],['game24.js','BIBLE_FIGHTER_COMBAT_FRAMES_READY','combat frame'],['game25.js','BIBLE_FIGHTER_FRAME_RULES_READY','enforced frame'],['game26.js','BIBLE_FIGHTER_DAVID_ART_READY','David art'],['game27.js','BIBLE_FIGHTER_DAVID_IMPACT_READY','David impact'],['game28.js','BIBLE_FIGHTER_MULTIPLAYER_READY','local multiplayer'],['game29.js','BIBLE_FIGHTER_STAGE_READY','2D stage'],['game30.js','BIBLE_FIGHTER_CORE_CHARACTERS_READY','core David/Moses fighters']]) if (!readFileSync(resolve(root,file),'utf8').includes(marker)) fail(`${label} runtime marker missing`);
+for (const [file, marker, label] of [
+  ['game23.js','BIBLE_FIGHTER_BRIEFING_READY','battle briefing'],
+  ['game24.js','BIBLE_FIGHTER_COMBAT_FRAMES_READY','combat frame'],
+  ['game25.js','BIBLE_FIGHTER_FRAME_RULES_READY','enforced frame'],
+  ['game26.js','BIBLE_FIGHTER_DAVID_ART_READY','David art'],
+  ['game27.js','BIBLE_FIGHTER_DAVID_IMPACT_READY','David impact'],
+  ['game28.js','BIBLE_FIGHTER_MULTIPLAYER_READY','local multiplayer'],
+  ['game29.js','BIBLE_FIGHTER_STAGE_READY','2D stage'],
+  ['game30.js','BIBLE_FIGHTER_CORE_CHARACTERS_READY','production David/Moses fighters']
+]) if (!readFileSync(resolve(root,file),'utf8').includes(marker)) fail(`${label} runtime marker missing`);
 const stageSource = readFileSync(resolve(root,'game29.js'),'utf8');
 for (const marker of ['elah-valley','red-sea','2.2-2d-stage']) if (!stageSource.includes(marker)) fail(`2D stage mode marker missing: ${marker}`);
-console.log(`Runtime validation passed: ${scripts.length} scripts + ${styles.length} stylesheets, local 2P + production David/Moses + 2D stages intact.`);
+const fighters = readFileSync(resolve(root,'game30.js'),'utf8');
+for (const marker of ['david','moses','local2p']) if (!fighters.includes(marker)) fail(`production fighter marker missing: ${marker}`);
+console.log(`Runtime validation passed: ${scripts.length} scripts + ${styles.length} stylesheets, local 2P + production David/Moses fighters + Elah/Red-Sea 2D stages intact.`);
