@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.2.8",
-  "build": "Global Quality Runtime",
+  "version": "1.2.9",
+  "build": "Global Quality Runtime + Playable Entry",
   "published": "2026-08-24",
-  "minimumWindows": "1.2.8",
+  "minimumWindows": "1.2.9",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "新增全局画质与性能运行时",
-    "窗口尺寸、DPR、后台/失焦状态统一处理",
-    "增加实时 FPS 与帧时间诊断",
-    "修正双人移动 smoke 质量门",
-    "保持本地 2P 大卫 vs 摩西战斗链稳定"
+    "质量运行时正式接入 playable 入口",
+    "统一 Windows 桌面版本号与网页入口版本",
+    "加入运行时 FPS、帧时间、DPR 与后台状态诊断",
+    "强化本地 2P 真实移动回归门槛",
+    "保持大卫 vs 摩西、2D 场景、BO3 战斗链稳定"
   ]
 }
