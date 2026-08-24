@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: bible-fighter-windows-${{ github.ref }}
+  group: bible-fighter-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
       - name: Verify Windows artifact
         shell: pwsh
         run: |
-          $files = Get-ChildItem -Path dist -Filter *.exe
+          $files = @(Get-ChildItem -Path dist -Filter *.exe)
           if ($files.Count -lt 1) {
             Write-Error 'No Windows .exe was produced.'
           }
@@ -40,6 +40,19 @@ jobs:
               Write-Error "Windows artifact is unexpectedly small: $($file.Name) ($($file.Length) bytes)"
             }
             Write-Host "Verified $($file.FullName) ($($file.Length) bytes)"
+          }
+      - name: Smoke test packaged executable
+        shell: pwsh
+        run: |
+          $exe = @(Get-ChildItem -Path dist -Filter *.exe)[0]
+          $env:BIBLE_FIGHTER_SMOKE = '1'
+          $process = Start-Process -FilePath $exe.FullName -PassThru
+          if (-not $process.WaitForExit(60000)) {
+            Stop-Process -Id $process.Id -Force
+            Write-Error 'Packaged Bible Fighter did not exit from smoke test within 60 seconds.'
+          }
+          if ($process.ExitCode -ne 0) {
+            Write-Error "Packaged Bible Fighter smoke test failed with exit code $($process.ExitCode)."
           }
       - uses: actions/upload-artifact@v4
         with:
