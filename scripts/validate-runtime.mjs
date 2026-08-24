@@ -15,25 +15,22 @@ const scripts = [...html.matchAll(/<script\s+src=["']([^"']+)["'][^>]*><\/script
 if (!scripts.length) fail('no external scripts found in playtest.html');
 
 const expectedRuntime = [
-  'data/characters.js', 'data/supports.js', 'data/missions.js', 'game7.js', 'game19.js', 'game20.js', 'game21.js'
+  'data/characters.js', 'data/supports.js', 'data/missions.js', 'data/codex.js', 'game7.js', 'game19.js', 'game20.js', 'game21.js', 'game22.js'
 ];
 for (const name of expectedRuntime) {
   if (!scripts.includes(name)) fail(`missing required runtime script: ${name}`);
 }
 
 const baseIndex = scripts.indexOf('game7.js');
-const characterIndex = scripts.indexOf('data/characters.js');
-const supportIndex = scripts.indexOf('data/supports.js');
-const missionIndex = scripts.indexOf('data/missions.js');
-if (characterIndex > baseIndex || supportIndex > baseIndex || missionIndex > baseIndex) {
-  fail('character/support/mission data must load before the combat engine');
+for (const name of ['data/characters.js', 'data/supports.js', 'data/missions.js', 'data/codex.js']) {
+  if (scripts.indexOf(name) > baseIndex) fail(`${name} must load before the combat engine`);
 }
-if (!(scripts.indexOf('game20.js') > scripts.indexOf('game19.js')) || !(scripts.indexOf('game21.js') > scripts.indexOf('game20.js'))) {
-  fail('combat HUD layers must load after the base diagnostic layer');
+if (!(scripts.indexOf('game20.js') > scripts.indexOf('game19.js')) || !(scripts.indexOf('game21.js') > scripts.indexOf('game20.js')) || !(scripts.indexOf('game22.js') > scripts.indexOf('game21.js'))) {
+  fail('combat HUD/identity/codex layers must load in order');
 }
 
 const styles = [...html.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi)].map((m) => m[1]);
-for (const name of ['game20.css', 'game21.css']) {
+for (const name of ['game20.css', 'game21.css', 'game22.css']) {
   if (!styles.includes(name)) fail(`missing required stylesheet: ${name}`);
 }
 
@@ -50,10 +47,14 @@ for (const marker of ['id="selectScreen"', 'id="battleScreen"', 'id="game"', 'id
   if (!html.includes(marker)) fail(`missing required UI marker: ${marker}`);
 }
 
+const game22 = readFileSync(resolve(root, 'game22.js'), 'utf8');
+if (!game22.includes('BIBLE_FIGHTER_CODEX_READY')) fail('biblical codex runtime marker missing');
+if (!existsSync(resolve(root, 'data/codex.js'))) fail('biblical codex data missing');
+
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
 const buildFiles = packageJson.build?.files ?? [];
-for (const required of ['playtest.html', 'game20.js', 'game21.js', 'game20.css', 'game21.css', 'data/**/*', 'electron/**/*']) {
+for (const required of ['playtest.html', 'game20.js', 'game21.js', 'game22.js', 'game20.css', 'game21.css', 'game22.css', 'data/**/*', 'electron/**/*']) {
   if (!buildFiles.includes(required)) fail(`electron-builder package files omit ${required}`);
 }
 
-console.log(`Runtime validation passed: ${scripts.length} scripts + ${styles.length} stylesheets, combat HUD entry intact.`);
+console.log(`Runtime validation passed: ${scripts.length} scripts + ${styles.length} stylesheets, combat HUD/identity/codex entry intact.`);
