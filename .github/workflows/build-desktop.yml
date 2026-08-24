@@ -24,7 +24,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
-      - name: Repair and validate source
+      - name: Validate source and runtime contract
         run: npm run validate
       - name: Build Windows portable executable
         run: npx electron-builder --win portable --publish never
@@ -71,7 +71,7 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag dist/*.exe --clobber
           } else {
-            gh release create $tag dist/*.exe --title "Bible Fighter $tag" --notes "Windows x64 portable build. Download the .exe, extract if needed, and double-click to run."
+            gh release create $tag dist/*.exe --title "Bible Fighter $tag" --notes "Windows x64 portable build for Bible Fighter 1.0.0. Runtime smoke test passed before publication."
           }
 
   macos:
@@ -83,6 +83,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Validate source and runtime contract
+        run: npm run validate
       - name: Build macOS package
         run: npx electron-builder --mac --publish never
       - uses: actions/upload-artifact@v4
