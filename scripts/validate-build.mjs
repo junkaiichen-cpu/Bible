@@ -1,51 +1,17 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-const required = ['playtest.html','style.css','game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','game29.js','game30.js','game31.js','game32.js','game33.js','game34.js','game35.js','game36.js','game37.js','game38.js','game39.js','game40.js','game41.js','game42.js','game43.js','game44.js','game45.js','game8.css','game20.css','game21.css','game22.css','game23.css','game34.css','game37.css','game38.css','data/characters.js','data/supports.js','data/missions.js','data/codex.js','data/update-manifest.js','data/update.json','electron/main.cjs','electron/preload.cjs','Playtest-Windows.bat'];
-const fail = message => { console.error(message); process.exit(1); };
-const missing = required.filter(file => !existsSync(file));
-if (missing.length) fail(`Missing required build files:\n${missing.join('\n')}`);
-
-const game7 = readFileSync('game7.js','utf8');
-if (game7.trim().length < 2000) fail('game7.js unexpectedly small');
-for (const marker of ['window.BIBLE_FIGHTER_SELECTION_READY','window.refreshSelect','window.start','window.attack','window.update','window.drawFx']) {
-  if (!game7.includes(marker)) fail(`game7 marker missing: ${marker}`);
-}
-
-const markerMap = {
-  'game32.js':['BIBLE_FIGHTER_STABILITY_READY','BIBLE_FIGHTER_CLEAR_INPUT','BIBLE_FIGHTER_TRIGGER_HITSTOP','bounds','separation'],
-  'game33.js':['BIBLE_FIGHTER_MATCH_READY','BIBLE_FIGHTER_RESET_INPUT','BIBLE_FIGHTER_MATCH_SYNC','epoch'],
-  'game34.js':['BIBLE_FIGHTER_UPDATE_CENTER_READY','UPDATE CENTER','检查更新'],
-  'game35.js':['BIBLE_FIGHTER_QUALITY_READY','BIBLE_FIGHTER_QUALITY','targetFps','frameMs'],
-  'game36.js':['BIBLE_FIGHTER_DAVID_SHOWCASE_READY','DAVID ·','牧者连段','远程确认','突进追击','终结演出'],
-  'game37.js':['BIBLE_FIGHTER_SELECTION_SHOWCASE_READY','CHARACTER SHOWCASE','pixel-head','stage-preview'],
-  'game38.js':['BIBLE_FIGHTER_COMBAT_PRESENTATION_READY','combat-topline','combat-objective','combat-status-line'],
-  'game39.js':['BIBLE_FIGHTER_COMBAT_FEEL_READY','inputBufferFrames','hitStopFrames','perfectInputCount'],
-  'game40.js':['BIBLE_FIGHTER_DAVID_COMBO_READY','inputBuffer','cancelWindow','landingGrace','airChaseReady'],
-  'game41.js':['BIBLE_FIGHTER_DAVID_MODEL_READY','BIBLE_FIGHTER_DAVID_MODEL_QUALITY_READY','BIBLE_FIGHTER_DAVID_MODEL_API','歌利亚之战','stoneTrail','skillPhase','lastSkill'],
-  'game42.js':['BIBLE_FIGHTER_DAVID_INTERACTION_READY','BIBLE_FIGHTER_DAVID_INTERACTION_API','trackedShots','lastHit'],
-  'game43.js':['BIBLE_FIGHTER_DAVID_POLISH_READY','BIBLE_FIGHTER_DAVID_POLISH_API','cameraKick','hitCount'],
-  'game44.js':['BIBLE_FIGHTER_COOLDOWN_READY','BIBLE_FIGHTER_COOLDOWN_API','s1','s2','r','c'],
-  'game45.js':['BIBLE_FIGHTER_REAL_COMBAT_READY','BIBLE_FIGHTER_REAL_COMBAT_API','version:\'1.4.6\'','p1:{left:\'a\'','p2:{left:\'arrowleft\'']
-};
-for (const [file, markers] of Object.entries(markerMap)) {
-  const content = readFileSync(file,'utf8');
-  for (const marker of markers) if (!content.includes(marker)) fail(`${file} marker missing: ${marker}`);
-}
-
-const update = readFileSync('data/update.json','utf8');
-if (!update.includes('1.4.6') || !update.includes('Real Combat Interaction Bridge')) fail('update.json is not 1.4.6');
-if (!readFileSync('data/update-manifest.js','utf8').includes('1.4.6')) fail('update-manifest is not 1.4.6');
-
-const preload = readFileSync('electron/preload.cjs','utf8');
-for (const marker of ['1.4.6','game34.js','game34.css','game43.js','game44.js','game45.js','data/update-manifest.js']) if (!preload.includes(marker)) fail(`preload marker missing: ${marker}`);
-
-const pkg = JSON.parse(readFileSync('package.json','utf8'));
-if (pkg.version !== '1.4.6') fail(`package version drift: ${pkg.version}`);
-for (const requiredPackage of ['game44.js','game45.js']) if (!(pkg.build?.files || []).includes(requiredPackage)) fail(`electron-builder package files omit ${requiredPackage}`);
-
-for (const file of required.filter(file => /\.js$/.test(file)).concat(['electron/main.cjs','electron/preload.cjs'])) {
-  const result = spawnSync(process.execPath, ['--check', file], { stdio:'inherit' });
-  if (result.status !== 0) process.exit(result.status ?? 1);
-}
-console.log('Build validation passed: 1.4.6 real combat interaction bridge + David model/skills + projectile/hit + combat polish + cooldown timing + lifecycle hardening + combo + combat feel + 2P intact.');
+const required = ['playtest.html','style.css','game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','game29.js','game30.js','game31.js','game32.js','game33.js','game34.js','game35.js','game36.js','game37.js','game38.js','game39.js','game40.js','game41.js','game42.js','game43.js','game44.js','game45.js','game46.js','game8.css','game20.css','game21.css','game22.css','game23.css','game34.css','game37.css','game38.css','data/characters.js','data/supports.js','data/missions.js','data/codex.js','data/update-manifest.js','data/update.json','electron/main.cjs','electron/preload.cjs','Playtest-Windows.bat'];
+const fail=message=>{console.error(message);process.exit(1);};
+const missing=required.filter(file=>!existsSync(file));if(missing.length)fail(`Missing required build files:\n${missing.join('\n')}`);
+const game7=readFileSync('game7.js','utf8');if(game7.trim().length<2000)fail('game7.js unexpectedly small');
+for(const marker of ['window.BIBLE_FIGHTER_SELECTION_READY','window.refreshSelect','window.start','window.attack','window.update','window.drawFx'])if(!game7.includes(marker))fail(`game7 marker missing: ${marker}`);
+const markerMap={'game32.js':['BIBLE_FIGHTER_STABILITY_READY','BIBLE_FIGHTER_CLEAR_INPUT','BIBLE_FIGHTER_TRIGGER_HITSTOP','bounds','separation'],'game33.js':['BIBLE_FIGHTER_MATCH_READY','BIBLE_FIGHTER_RESET_INPUT','BIBLE_FIGHTER_MATCH_SYNC','epoch'],'game34.js':['BIBLE_FIGHTER_UPDATE_CENTER_READY','UPDATE CENTER','检查更新'],'game35.js':['BIBLE_FIGHTER_QUALITY_READY','BIBLE_FIGHTER_QUALITY','targetFps','frameMs'],'game36.js':['BIBLE_FIGHTER_DAVID_SHOWCASE_READY','DAVID ·','牧者连段','远程确认','突进追击','终结演出'],'game37.js':['BIBLE_FIGHTER_SELECTION_SHOWCASE_READY','CHARACTER SHOWCASE','pixel-head','stage-preview'],'game38.js':['BIBLE_FIGHTER_COMBAT_PRESENTATION_READY','combat-topline','combat-objective','combat-status-line'],'game39.js':['BIBLE_FIGHTER_COMBAT_FEEL_READY','inputBufferFrames','hitStopFrames','perfectInputCount'],'game40.js':['BIBLE_FIGHTER_DAVID_COMBO_READY','inputBuffer','cancelWindow','landingGrace','airChaseReady'],'game41.js':['BIBLE_FIGHTER_DAVID_MODEL_READY','BIBLE_FIGHTER_DAVID_MODEL_QUALITY_READY','BIBLE_FIGHTER_DAVID_MODEL_API','歌利亚之战','stoneTrail','skillPhase','lastSkill'],'game42.js':['BIBLE_FIGHTER_DAVID_INTERACTION_READY','BIBLE_FIGHTER_DAVID_INTERACTION_API','trackedShots','lastHit'],'game43.js':['BIBLE_FIGHTER_DAVID_POLISH_READY','BIBLE_FIGHTER_DAVID_POLISH_API','cameraKick','hitCount'],'game44.js':['BIBLE_FIGHTER_COOLDOWN_READY','BIBLE_FIGHTER_COOLDOWN_API','s1','s2','r','c'],'game45.js':['BIBLE_FIGHTER_REAL_COMBAT_READY','BIBLE_FIGHTER_REAL_COMBAT_API','version:\'1.4.6\'','p1:{left:\'a\'','p2:{left:\'arrowleft\'']};
+for(const[file,markers]of Object.entries(markerMap)){const content=readFileSync(file,'utf8');for(const marker of markers)if(!content.includes(marker))fail(`${file} marker missing: ${marker}`);}
+const core=readFileSync('game46.js','utf8');for(const marker of ['BIBLE_FIGHTER_COMBAT_CORE_READY','BIBLE_FIGHTER_COMBAT_CORE_API','version:\'1.4.7\'','guards','airHits'])if(!core.includes(marker))fail(`game46 combat core marker missing: ${marker}`);
+const update=readFileSync('data/update.json','utf8');if(!update.includes('1.4.6')||!update.includes('Real Combat Interaction Bridge'))fail('update.json is not 1.4.6');
+if(!readFileSync('data/update-manifest.js','utf8').includes('1.4.6'))fail('update-manifest is not 1.4.6');
+const preload=readFileSync('electron/preload.cjs','utf8');for(const marker of ['1.4.6','game34.js','game34.css','game43.js','game44.js','game45.js','data/update-manifest.js'])if(!preload.includes(marker))fail(`preload marker missing: ${marker}`);
+const pkg=JSON.parse(readFileSync('package.json','utf8'));if(pkg.version!=='1.4.6')fail(`package version drift: ${pkg.version}`);for(const requiredPackage of ['game44.js','game45.js','game46.js'])if(!(pkg.build?.files||[]).includes(requiredPackage))fail(`electron-builder package files omit ${requiredPackage}`);
+for(const file of required.filter(file=>/\.js$/.test(file)).concat(['electron/main.cjs','electron/preload.cjs'])){const result=spawnSync(process.execPath,['--check',file],{stdio:'inherit'});if(result.status!==0)process.exit(result.status??1);}
+console.log('Build validation passed: 1.4.6 real combat bridge + combat core 2.0 + David model/skills + projectile/hit + combat polish + cooldown timing + lifecycle hardening + combo + combat feel + 2P intact.');
