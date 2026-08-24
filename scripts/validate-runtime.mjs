@@ -14,39 +14,46 @@ const html = readFileSync(htmlPath, 'utf8');
 const scripts = [...html.matchAll(/<script\s+src=["']([^"']+)["'][^>]*><\/script>/gi)].map((m) => m[1]);
 if (!scripts.length) fail('no external scripts found in playtest.html');
 
-const expectedFirst = ['data/characters.js', 'data/supports.js', 'game7.js'];
-for (const name of expectedFirst) {
+const expectedRuntime = [
+  'data/characters.js', 'data/supports.js', 'data/missions.js', 'game7.js', 'game19.js', 'game20.js', 'game21.js'
+];
+for (const name of expectedRuntime) {
   if (!scripts.includes(name)) fail(`missing required runtime script: ${name}`);
 }
 
 const baseIndex = scripts.indexOf('game7.js');
 const characterIndex = scripts.indexOf('data/characters.js');
 const supportIndex = scripts.indexOf('data/supports.js');
-if (characterIndex > baseIndex || supportIndex > baseIndex) {
-  fail('character/support data must load before the combat engine');
+const missionIndex = scripts.indexOf('data/missions.js');
+if (characterIndex > baseIndex || supportIndex > baseIndex || missionIndex > baseIndex) {
+  fail('character/support/mission data must load before the combat engine');
+}
+if (!(scripts.indexOf('game20.js') > scripts.indexOf('game19.js')) || !(scripts.indexOf('game21.js') > scripts.indexOf('game20.js'))) {
+  fail('combat HUD layers must load after the base diagnostic layer');
+}
+
+const styles = [...html.matchAll(/<link\s+rel=["']stylesheet["']\s+href=["']([^"']+)["'][^>]*>/gi)].map((m) => m[1]);
+for (const name of ['game20.css', 'game21.css']) {
+  if (!styles.includes(name)) fail(`missing required stylesheet: ${name}`);
 }
 
 for (const src of scripts) {
   if (/^https?:\/\//i.test(src) || src.startsWith('//')) fail(`remote runtime dependency is not allowed: ${src}`);
   if (!existsSync(resolve(root, src))) fail(`script referenced by playtest.html does not exist: ${src}`);
 }
+for (const src of styles) {
+  if (/^https?:\/\//i.test(src) || src.startsWith('//')) fail(`remote stylesheet dependency is not allowed: ${src}`);
+  if (!existsSync(resolve(root, src))) fail(`stylesheet referenced by playtest.html does not exist: ${src}`);
+}
 
 for (const marker of ['id="selectScreen"', 'id="battleScreen"', 'id="game"', 'id="startBtn"']) {
   if (!html.includes(marker)) fail(`missing required UI marker: ${marker}`);
 }
 
-const game19 = readFileSync(resolve(root, 'game19.js'), 'utf8');
-if (!game19.includes('game20.js') || !game19.includes('game20.css') || !game19.includes('BIBLE_FIGHTER_HUD_READY')) {
-  fail('game19.js is not wired to dynamically load the combat HUD layer');
-}
-if (!existsSync(resolve(root, 'game20.js')) || !existsSync(resolve(root, 'game20.css'))) {
-  fail('combat HUD assets are missing');
-}
-
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
 const buildFiles = packageJson.build?.files ?? [];
-for (const required of ['playtest.html', 'game20.js', 'game20.css', 'data/**/*', 'electron/**/*']) {
+for (const required of ['playtest.html', 'game20.js', 'game21.js', 'game20.css', 'game21.css', 'data/**/*', 'electron/**/*']) {
   if (!buildFiles.includes(required)) fail(`electron-builder package files omit ${required}`);
 }
 
-console.log(`Runtime validation passed: ${scripts.length} entry scripts, dynamically loaded combat HUD intact.`);
+console.log(`Runtime validation passed: ${scripts.length} scripts + ${styles.length} stylesheets, combat HUD entry intact.`);
