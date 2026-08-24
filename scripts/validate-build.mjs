@@ -8,9 +8,9 @@ for(const marker of ['BIBLE_FIGHTER_STABILITY_READY','BIBLE_FIGHTER_CLEAR_INPUT'
 for(const marker of ['BIBLE_FIGHTER_MATCH_READY','BIBLE_FIGHTER_RESET_INPUT','BIBLE_FIGHTER_MATCH_SYNC','epoch'])if(!readFileSync('game33.js','utf8').includes(marker)){console.error(`game33 marker missing: ${marker}`);process.exit(1);}
 for(const marker of ['BIBLE_FIGHTER_UPDATE_CENTER_READY','UPDATE CENTER','检查更新'])if(!readFileSync('game34.js','utf8').includes(marker)){console.error(`game34 marker missing: ${marker}`);process.exit(1);}
 for(const marker of ['BIBLE_FIGHTER_QUALITY_READY','BIBLE_FIGHTER_QUALITY','targetFps','frameMs'])if(!readFileSync('game35.js','utf8').includes(marker)){console.error(`game35 marker missing: ${marker}`);process.exit(1);}
-if(!readFileSync('data/update.json','utf8').includes('1.2.8')){console.error('update.json version missing 1.2.8');process.exit(1);}
-if(!readFileSync('data/update-manifest.js','utf8').includes('1.2.8')){console.error('update-manifest version missing 1.2.8');process.exit(1);}
-const preload=readFileSync('electron/preload.cjs','utf8'); for(const marker of ['1.2.8','game34.js','game34.css','data/update-manifest.js'])if(!preload.includes(marker)){console.error(`preload update mount missing: ${marker}`);process.exit(1);}
-const pkg=JSON.parse(readFileSync('package.json','utf8')); if(pkg.version!=='1.2.8'){console.error(`package version drift: ${pkg.version}`);process.exit(1);} if(!(pkg.build?.files||[]).includes('game35.js')){console.error('electron-builder package files omit game35.js');process.exit(1);}
+if(!readFileSync('data/update.json','utf8').includes('1.2.9')){console.error('update.json version missing 1.2.9');process.exit(1);}
+if(!readFileSync('data/update-manifest.js','utf8').includes('1.2.9')){console.error('update-manifest version missing 1.2.9');process.exit(1);}
+const preload=readFileSync('electron/preload.cjs','utf8'); for(const marker of ['1.2.9','game34.js','game34.css','data/update-manifest.js'])if(!preload.includes(marker)){console.error(`preload update mount missing: ${marker}`);process.exit(1);}
+const pkg=JSON.parse(readFileSync('package.json','utf8')); if(pkg.version!=='1.2.9'){console.error(`package version drift: ${pkg.version}`);process.exit(1);} if(!(pkg.build?.files||[]).includes('game35.js')){console.error('electron-builder package files omit game35.js');process.exit(1);}
 for(const file of required.filter((f)=>/\.js$/.test(f)).concat(['electron/main.cjs','electron/preload.cjs'])){const result=spawnSync(process.execPath,['--check',file],{stdio:'inherit'});if(result.status!==0)process.exit(result.status??1);}
 console.log('Build validation passed: combat runtime + 2P + stages + match lifecycle + update center + global quality runtime intact.');
