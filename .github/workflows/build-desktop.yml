@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: bible-fighter-${{ github.ref }}
@@ -54,11 +54,25 @@ jobs:
           if ($process.ExitCode -ne 0) {
             Write-Error "Packaged Bible Fighter smoke test failed with exit code $($process.ExitCode)."
           }
+          Write-Host 'Packaged Bible Fighter smoke test passed.'
       - uses: actions/upload-artifact@v4
         with:
           name: bible-fighter-windows-x64
           path: dist/*.exe
           if-no-files-found: error
+      - name: Publish Windows executable to GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "build-${{ github.run_number }}"
+          $existing = gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag dist/*.exe --clobber
+          } else {
+            gh release create $tag dist/*.exe --title "Bible Fighter $tag" --notes "Windows x64 portable build. Download the .exe, extract if needed, and double-click to run."
+          }
 
   macos:
     runs-on: macos-latest
