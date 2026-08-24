@@ -5,7 +5,6 @@
   "main": "electron/main.cjs",
   "scripts": {
     "start": "npm run validate && electron .",
-    "repair:source": "npm run repair:source && node scripts/validate-build.mjs",
     "repair:source": "node scripts/repair-build-source.mjs",
     "validate:source": "npm run repair:source && node scripts/validate-build.mjs",
     "validate:runtime": "node scripts/validate-runtime.mjs",
