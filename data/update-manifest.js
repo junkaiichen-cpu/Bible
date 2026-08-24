@@ -2,16 +2,16 @@
   'use strict';
   window.BIBLE_FIGHTER_UPDATE_MANIFEST = {
     channel: 'stable',
-    version: '1.4.2',
-    build: 'David Combat Polish Pass',
+    version: '1.4.3',
+    build: 'David Runtime Hardening Pass',
     published: '2026-08-24',
     notes: [
-      '大卫完整模型 + 真实投射物 + 真实命中反馈',
-      '新增战斗冲击、闪帧与重击确认',
-      'KO 进入歌利亚之战终结反馈',
-      '保留 1.4.1 的模型、技能、连段与互动层'
+      '大卫模型与真实投射物、真实命中反馈保持同步',
+      '战斗开始后再初始化 David interaction / polish，避免启动竞态',
+      '再战或回合恢复时清理震屏与终结状态',
+      'Windows portable、runtime contract、smoke test 统一到 1.4.3'
     ],
-    minimumWindows: '1.4.2',
+    minimumWindows: '1.4.3',
     download: 'https://github.com/junkaiichen-cpu/Bible/actions'
   };
   window.BIBLE_FIGHTER_UPDATE_READY = true;
