@@ -19,6 +19,7 @@
   "build": {
     "appId": "org.junkaiichen.biblefighter",
     "productName": "Bible Fighter",
+    "artifactName": "Bible-Fighter-Windows-x64.${ext}",
     "files": [
       "playtest.html",
       "style.css",
