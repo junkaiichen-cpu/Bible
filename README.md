@@ -2,19 +2,31 @@
 
 一个以圣经人物为核心的 2.5D 横版动作格斗游戏。当前重点是可真实操作的 Windows 2P 本地对战，并持续向高质量像素横版格斗的战斗手感迭代。
 
+## Windows 下载与运行
+
+**普通玩家不需要安装 Node.js、npm、Electron，也不需要下载源码。**
+
+### 直接下载 Windows x64 版本
+
+[**下载 Bible Fighter Windows x64**](https://github.com/junkaiichen-cpu/Bible/releases/latest/download/Bible-Fighter-Windows-x64.exe)
+
+下载完成后，双击 `Bible-Fighter-Windows-x64.exe` 即可启动。
+
+这是 portable 版本，不需要安装程序；游戏会直接运行。
+
+如果 Windows SmartScreen 显示“Windows 已保护你的电脑”或未知发布者提示，这是因为当前版本尚未使用商业代码签名证书。确认文件来自本仓库的 GitHub Release 后，在 SmartScreen 中选择“更多信息”→“仍要运行”即可。
+
+### 从 GitHub Release 选择版本
+
+[打开所有 Windows Releases](https://github.com/junkaiichen-cpu/Bible/releases)
+
+每个经过发布的 Windows 版本都会先经过源码验证、Electron Renderer 启动检查、打包 EXE smoke test，以及真实的大卫 vs 摩西战斗启动与普攻输入测试，然后才进入 Release。
+
 ## Build 18 · Moses Combat Pass
 
 当前流程：
 
 **角色选择 → 角色 + 密卷 + 帮手 → 3/2/1 → 同屏 1v1 → Best of 3 → 再战 / 换角色**
-
-### Windows 桌面构建
-
-Electron 桌面壳直接启动 `playtest.html`；Windows 构建使用 `electron-builder --win portable` 产出可直接运行的 x64 `.exe`。
-
-GitHub Actions 会在 `main` 每次推送后自动构建 Windows x64 portable 版本，并将 `.exe` 作为 workflow artifact 保存。打包前会运行 `npm run validate`，检查入口、资源和全部战斗 JavaScript 的语法。
-
-在 Windows 上没有 `.exe` 时，也可以直接双击 `Playtest-Windows.bat` 打开当前浏览器试玩版。
 
 ### 当前战斗输入
 

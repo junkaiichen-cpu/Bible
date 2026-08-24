@@ -35,6 +35,10 @@ jobs:
           if ($files.Count -lt 1) {
             Write-Error 'No Windows .exe was produced.'
           }
+          $expected = Join-Path (Get-Location) 'dist\Bible-Fighter-Windows-x64.exe'
+          if (-not (Test-Path $expected)) {
+            Write-Error "Stable Windows asset missing: $expected"
+          }
           foreach ($file in $files) {
             if ($file.Length -lt 10000000) {
               Write-Error "Windows artifact is unexpectedly small: $($file.Name) ($($file.Length) bytes)"
@@ -44,9 +48,9 @@ jobs:
       - name: Smoke test packaged executable
         shell: pwsh
         run: |
-          $exe = @(Get-ChildItem -Path dist -Filter *.exe)[0]
+          $exe = Join-Path (Get-Location) 'dist\Bible-Fighter-Windows-x64.exe'
           $env:BIBLE_FIGHTER_SMOKE = '1'
-          $process = Start-Process -FilePath $exe.FullName -PassThru
+          $process = Start-Process -FilePath $exe -PassThru
           if (-not $process.WaitForExit(60000)) {
             Stop-Process -Id $process.Id -Force
             Write-Error 'Packaged Bible Fighter did not exit from smoke test within 60 seconds.'
@@ -58,7 +62,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: bible-fighter-windows-x64
-          path: dist/*.exe
+          path: dist/Bible-Fighter-Windows-x64.exe
           if-no-files-found: error
       - name: Publish Windows executable to GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -67,11 +71,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "build-${{ github.run_number }}"
+          $asset = 'dist/Bible-Fighter-Windows-x64.exe'
           $existing = gh release view $tag 2>$null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag dist/*.exe --clobber
+            gh release upload $tag $asset --clobber
           } else {
-            gh release create $tag dist/*.exe --title "Bible Fighter $tag" --notes "Windows x64 portable build for Bible Fighter 1.0.0. Runtime smoke test passed before publication."
+            gh release create $tag $asset --title "Bible Fighter $tag" --notes "Windows x64 portable build. Runtime and real-combat smoke tests passed. Download the EXE below and double-click it to play."
           }
 
   macos:
