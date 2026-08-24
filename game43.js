@@ -9,13 +9,7 @@
     if (!X) return;
 
     const polish = window.BIBLE_FIGHTER_DAVID_POLISH = window.BIBLE_FIGHTER_DAVID_POLISH || {
-      version: '1.4.2',
-      ready: true,
-      cameraKick: 0,
-      flash: 0,
-      lastEvent: '',
-      ko: false,
-      hitCount: 0
+      version: '1.4.2', ready: true, cameraKick: 0, flash: 0, lastEvent: '', ko: false, hitCount: 0
     };
 
     const david = (f) => f?.id === 'david';
@@ -24,9 +18,7 @@
     window.hit = (attacker, defender, damage, stun, knock, label) => {
       const before = defender?.hp ?? 0;
       baseHit(attacker, defender, damage, stun, knock, label);
-      if (!david(attacker) || !defender) return;
-      const dealt = defender.hp < before;
-      if (!dealt) return;
+      if (!david(attacker) || !defender || !(defender.hp < before)) return;
       const text = String(label || '命中');
       polish.lastEvent = text;
       polish.hitCount += 1;
@@ -35,8 +27,18 @@
       if (defender.hp <= 0) polish.ko = true;
     };
 
+    const syncLifecycle = () => {
+      if ((window.A?.hp ?? 1) > 0 && (window.B?.hp ?? 1) > 0 && polish.ko) polish.ko = false;
+      if (!window.S?.run) { canvas.style.transform = ''; return; }
+      if (polish.cameraKick <= 0) { canvas.style.transform = ''; return; }
+      const amp = Math.min(4, Math.ceil(polish.cameraKick / 2));
+      const x = (polish.cameraKick % 2 ? amp : -amp);
+      const y = (polish.cameraKick % 3) - 1;
+      canvas.style.transform = `translate(${x}px, ${y}px)`;
+      polish.cameraKick--;
+    };
+
     const drawOverlay = () => {
-      if (polish.cameraKick > 0) polish.cameraKick--;
       if (polish.flash > 0) {
         X.save();
         X.globalAlpha = Math.min(0.18, polish.flash / 45);
@@ -63,20 +65,10 @@
 
     window.BIBLE_FIGHTER_DAVID_POLISH_READY = true;
     window.BIBLE_FIGHTER_DAVID_POLISH_API = {
-      snapshot: () => ({
-        version: polish.version,
-        cameraKick: polish.cameraKick,
-        flash: polish.flash,
-        lastEvent: polish.lastEvent,
-        hitCount: polish.hitCount,
-        ko: polish.ko
-      })
+      snapshot: () => ({version: polish.version, cameraKick: polish.cameraKick, flash: polish.flash, lastEvent: polish.lastEvent, hitCount: polish.hitCount, ko: polish.ko})
     };
 
-    const loop = () => {
-      drawOverlay();
-      requestAnimationFrame(loop);
-    };
+    const loop = () => { syncLifecycle(); drawOverlay(); requestAnimationFrame(loop); };
     loop();
   };
 
