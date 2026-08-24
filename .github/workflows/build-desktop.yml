@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: bible-fighter-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -18,8 +22,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
-      - run: npm run dist:win
+      - name: Install dependencies
+        run: npm install
+      - name: Repair and validate source
+        run: npm run validate
+      - name: Build Windows portable executable
+        run: npx electron-builder --win portable --publish never
+      - name: Verify Windows artifact
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path dist -Filter *.exe
+          if ($files.Count -lt 1) {
+            Write-Error 'No Windows .exe was produced.'
+          }
+          foreach ($file in $files) {
+            if ($file.Length -lt 10000000) {
+              Write-Error "Windows artifact is unexpectedly small: $($file.Name) ($($file.Length) bytes)"
+            }
+            Write-Host "Verified $($file.FullName) ($($file.Length) bytes)"
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: bible-fighter-windows-x64
@@ -33,8 +54,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
-      - run: npx electron-builder --mac --publish never
+      - name: Install dependencies
+        run: npm install
+      - name: Build macOS package
+        run: npx electron-builder --mac --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: bible-fighter-macos
