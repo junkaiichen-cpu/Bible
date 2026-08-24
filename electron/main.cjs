@@ -1,8 +1,33 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 const smoke = process.env.BIBLE_FIGHTER_SMOKE === '1';
 let smokeFailed = false;
+
+function writeFatalLog(kind, error) {
+  try {
+    const message = error instanceof Error ? `${error.stack || error.message}` : String(error);
+    const logPath = path.join(app.getPath('userData'), 'bible-fighter-runtime.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${kind}\n${message}\n`, 'utf8');
+  } catch {}
+}
+
+process.on('uncaughtException', (error) => {
+  writeFatalLog('uncaughtException', error);
+  if (smoke) {
+    smokeFailed = true;
+    app.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason) => {
+  writeFatalLog('unhandledRejection', reason);
+  if (smoke) {
+    smokeFailed = true;
+    app.exit(1);
+  }
+});
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -40,8 +65,6 @@ function createWindow() {
   win.webContents.on('console-message', (_event, level, message) => {
     if (!smoke) return;
     console.log(`[renderer:${level}] ${message}`);
-    // Chromium console-message levels: 0 verbose, 1 info, 2 warning, 3 error.
-    // Warnings are intentionally tolerated; actual renderer errors fail the smoke test.
     if (level >= 3) {
       smokeFailed = true;
       app.exit(1);
@@ -50,9 +73,37 @@ function createWindow() {
 
   win.webContents.once('did-finish-load', () => {
     if (!smoke) return;
-    setTimeout(() => {
+    setTimeout(async () => {
+      try {
+        const probe = await win.webContents.executeJavaScript(`(() => ({
+          ready: document.readyState,
+          title: document.title,
+          canvas: Boolean(document.querySelector('#game')),
+          startButton: Boolean(document.querySelector('#startBtn')),
+          selectScreen: Boolean(document.querySelector('#selectScreen')),
+          battleScreen: Boolean(document.querySelector('#battleScreen')),
+          roster: typeof window.BIBLE_ROSTER === 'object',
+          supports: typeof window.BIBLE_SUPPORTS === 'object'
+        }))()`, true);
+        console.log(`[smoke] ${JSON.stringify(probe)}`);
+        const ok = probe.ready === 'complete'
+          && probe.canvas
+          && probe.startButton
+          && probe.selectScreen
+          && probe.battleScreen
+          && probe.roster
+          && probe.supports;
+        if (!ok) {
+          console.error(`Runtime probe failed: ${JSON.stringify(probe)}`);
+          smokeFailed = true;
+        }
+      } catch (error) {
+        console.error(`Runtime probe exception: ${error?.stack || error}`);
+        smokeFailed = true;
+      }
       if (!smokeFailed) app.exit(0);
-    }, 600);
+      else app.exit(1);
+    }, 700);
   });
 
   win.loadFile(path.join(__dirname, '..', 'playtest.html'));
