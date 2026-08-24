@@ -3,8 +3,8 @@ import { spawnSync } from 'node:child_process';
 
 const required = [
   'playtest.html', 'style.css', 'game7.js', 'game8.js', 'game9.js', 'game10.js', 'game11.js',
-  'game12.js', 'game13.js', 'game14.js', 'game15.js', 'game19.js', 'game20.js', 'game21.js', 'game8.css',
-  'game20.css', 'game21.css', 'data/characters.js', 'data/supports.js', 'data/missions.js',
+  'game12.js', 'game13.js', 'game14.js', 'game15.js', 'game19.js', 'game20.js', 'game21.js', 'game22.js', 'game8.css',
+  'game20.css', 'game21.css', 'game22.css', 'data/characters.js', 'data/supports.js', 'data/missions.js', 'data/codex.js',
   'electron/main.cjs', 'Playtest-Windows.bat'
 ];
 const missing = required.filter((file) => !existsSync(file));
@@ -36,10 +36,16 @@ for (const marker of ['combat-identity-layer', 'mission-reward', 'identity-statu
     process.exit(1);
   }
 }
+for (const marker of ['codex-layer', 'BIBLE_FIGHTER_CODEX_READY', 'codexNext']) {
+  if (!readFileSync('game22.js', 'utf8').includes(marker)) {
+    console.error(`Build validation failed: game22.js missing codex marker: ${marker}`);
+    process.exit(1);
+  }
+}
 
-for (const file of ['game7.js', 'game8.js', 'game9.js', 'game10.js', 'game11.js', 'game12.js', 'game13.js', 'game14.js', 'game15.js', 'game19.js', 'game20.js', 'game21.js', 'electron/main.cjs']) {
+for (const file of ['game7.js', 'game8.js', 'game9.js', 'game10.js', 'game11.js', 'game12.js', 'game13.js', 'game14.js', 'game15.js', 'game19.js', 'game20.js', 'game21.js', 'game22.js', 'electron/main.cjs']) {
   const result = spawnSync(process.execPath, ['--check', file], { stdio: 'inherit' });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-console.log('Build validation passed: canonical combat runtime + HUD + identity layers present.');
+console.log('Build validation passed: canonical combat runtime + HUD + identity + codex layers present.');
