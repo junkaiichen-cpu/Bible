@@ -1,8 +1,8 @@
 # 约谷 · Bible Fighter
 
-一个以圣经人物为核心的 2.5D 横版动作格斗游戏原型。当前重点是可真实操作的 Windows 2P 本地对战构建。
+一个以圣经人物为核心的 2.5D 横版动作格斗游戏原型。当前重点是可真实操作的 Windows 2P 本地对战构建，并持续向高质量像素横版格斗的战斗手感迭代。
 
-## Build 10 · Duel Combat
+## Build 11 · Combat Feel
 
 当前流程：
 
@@ -10,7 +10,7 @@
 
 ### Windows 桌面构建
 
-Electron 桌面壳现在直接启动 `playtest.html`，与 Build 10 战斗版本一致；Windows 构建使用 `electron-builder --win portable` 产出可直接运行的 x64 `.exe`。
+Electron 桌面壳直接启动 `playtest.html`，实际运行 Build 10 战斗引擎 + Build 11 战斗手感层；Windows 构建使用 `electron-builder --win portable` 产出可直接运行的 x64 `.exe`。
 
 GitHub Actions 会在 `main` 每次推送后自动构建 Windows x64 portable 版本，并将 `.exe` 作为 workflow artifact 保存。
 
@@ -28,6 +28,20 @@ P2：方向键 + `1/2/3/4/5/8/9`
 - 密卷
 - 帮手
 
+### Build 11 战斗手感层
+
+- 5A 连段保持原有逻辑，并强化动作可读性
+- 命中停顿（hit-stop）
+- 受击闪白
+- 重击 / 奥义强化震屏反馈
+- 击飞与高速位移残影
+- 更完整的像素角色动作轮廓
+- 投射物拖尾与冲击线
+- 命中环、粒子与方向性打击反馈
+- 战场像素层次与移动装饰
+
+详细目标见 `COMBAT_TARGET.md`。
+
 ### 当前核心机制
 
 - 普攻 5 段连击与终段击飞
@@ -40,7 +54,7 @@ P2：方向键 + `1/2/3/4/5/8/9`
 - 密卷：长 CD + 发动期间金刚体
 - 帮手：整场 Best of 3 仅一次，跨回合保留
 - Best of 3
-- 双人移动端触控
+- 双人移动端触控（Windows 目标不要求手柄）
 
 ### 六名角色的技能方向
 
