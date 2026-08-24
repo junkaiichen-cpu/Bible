@@ -1,0 +1,12 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const root=process.cwd(); const fail=m=>{console.error(`1.5.0 runtime validation failed: ${m}`);process.exit(1)};
+const html=readFileSync(resolve(root,'playtest.html'),'utf8');
+const scripts=[...html.matchAll(/<script\s+src=["']([^"']+)["']/g)].map(m=>m[1]);
+for(const s of ['game7.js','game46.js','game47.js']) if(!scripts.includes(s)) fail(`missing ${s}`);
+if(!(scripts.indexOf('game46.js')>scripts.indexOf('game45.js')&&scripts.indexOf('game47.js')>scripts.indexOf('game46.js'))) fail('combat runtime order invalid');
+const preload=readFileSync(resolve(root,'electron/preload.cjs'),'utf8'); for(const m of ['1.5.0','game46.js','game47.js']) if(!preload.includes(m)) fail(`preload missing ${m}`);
+const pkg=JSON.parse(readFileSync(resolve(root,'package.json'),'utf8')); if(pkg.version!=='1.5.0') fail(`package drift ${pkg.version}`);
+for(const f of ['game46.js','game47.js']) if(!pkg.build.files.includes(f)) fail(`package omits ${f}`);
+const slice=readFileSync(resolve(root,'game47.js'),'utf8'); for(const m of ['BIBLE_FIGHTER_VERTICAL_SLICE_READY','drawValley','drawSea','drawDavid','drawMoses','drawSkillFx']) if(!slice.includes(m)) fail(`vertical slice missing ${m}`);
+console.log(`1.5.0 runtime validation passed: ${scripts.length} scripts + complete vertical slice`);
