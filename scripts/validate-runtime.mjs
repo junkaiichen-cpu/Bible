@@ -35,10 +35,17 @@ for (const marker of ['id="selectScreen"', 'id="battleScreen"', 'id="game"', 'id
   if (!html.includes(marker)) fail(`missing required UI marker: ${marker}`);
 }
 
+for (const marker of ['game20.js', 'mission', 'skill']) {
+  if (!html.includes(marker) && marker !== 'game20.js') fail(`playtest entry missing combat HUD marker: ${marker}`);
+}
+if (!existsSync(resolve(root, 'game20.js')) || !existsSync(resolve(root, 'game20.css'))) {
+  fail('combat HUD assets are missing');
+}
+
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
 const buildFiles = packageJson.build?.files ?? [];
-for (const required of ['playtest.html', 'data/**/*', 'electron/**/*']) {
+for (const required of ['playtest.html', 'game20.js', 'game20.css', 'data/**/*', 'electron/**/*']) {
   if (!buildFiles.includes(required)) fail(`electron-builder package files omit ${required}`);
 }
 
-console.log(`Runtime validation passed: ${scripts.length} runtime scripts, packaged entry intact.`);
+console.log(`Runtime validation passed: ${scripts.length} runtime scripts, packaged combat HUD intact.`);
