@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.4.2",
-  "build": "David Combat Polish Pass",
+  "version": "1.4.3",
+  "build": "David Runtime Hardening Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.2",
+  "minimumWindows": "1.4.3",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "大卫完整模型继续使用真实 A/B 战斗对象",
-    "投石索真实 projectile 与命中反馈保持同步",
-    "新增大卫战斗命中冲击、闪帧与终结反馈",
-    "强化重击确认与 KO 终结视觉反馈",
-    "Windows 构建必须验证 1.4.2 combat polish runtime"
+    "大卫 interaction 与 combat polish 延续使用真实 A/B 战斗对象",
+    "修复战斗开始前 David interaction/polish 层过早初始化的问题",
+    "重置回合时清理震屏与终结状态，避免上一回合视觉残留",
+    "Electron portable 构建、runtime、smoke 版本统一到 1.4.3",
+    "Windows 构建必须验证真实大卫普攻、投石索与命中反馈"
   ]
 }
