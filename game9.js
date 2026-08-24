@@ -2,17 +2,13 @@
   'use strict';
 
   const boot = () => {
-    if (!window.attack || !window.update || !window.hit) return;
+    if (!window.attack || !window.hit) return;
 
     S.attackFrame = 0;
     S.attackDebug = false;
-    S.paused = false;
     S.comboScale = true;
 
-    const baseAttack = window.attack;
-    const baseUpdate = window.update;
     const baseHit = window.hit;
-    const baseClean = window.clean;
 
     const attackFrames = {
       1: { startup: 5, active: 4, recovery: 8, range: 55, damage: 6, knock: 7, launch: -2.0 },
@@ -39,7 +35,7 @@
 
     const tickAttack = (f) => {
       const a = f.attackCtx;
-      if (!a) return;
+      if (!a || S.paused || !S.run) return;
       a.timer -= 1;
       const data = a.data;
 
@@ -55,15 +51,20 @@
           f.atk = 8;
         } else {
           finishAttack(f);
+          return;
         }
       }
 
+      f.vx *= 0.82;
       if (a.phase === 'active' && !a.didHit) {
         const e = opp(f);
         const b = attackBox(f, data);
         if (e && ov(b, hb(e.x, e.y, e.w, e.h))) {
           a.didHit = true;
-          baseHit(f, e, data.damage * f.pw, a.step === 5 ? 16 : 8, data.knock, a.step === 5 ? '重击' : '普攻');
+          const scaled = S.comboScale && f.combo > 4
+            ? data.damage * f.pw * Math.max(0.58, 1 - (f.combo - 4) * 0.035)
+            : data.damage * f.pw;
+          baseHit(f, e, scaled, a.step === 5 ? 16 : 8, data.knock, a.step === 5 ? '重击' : '普攻');
           e.vy = data.launch;
         }
       }
@@ -87,53 +88,45 @@
       f.vx *= 0.25;
     };
 
-    window.update = function (f, dt) {
-      if (S.paused) return;
-      baseUpdate(f, dt);
-      if (f.attackCtx) tickAttack(f);
-      if (!f.attackCtx && f.bufferedAttack && f.lock <= 1) {
-        f.bufferedAttack = 0;
+    // The original Build 10 input dispatcher closes over its own attack() function.
+    // Capture attack inputs before that dispatcher so the frame-based attack system is authoritative.
+    document.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      const map = {
+        j: 'p1',
+        '1': 'p2'
+      };
+      if (map[k]) {
+        const f = map[k] === 'p1' ? A : B;
+        if (f) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          window.attack(f);
+        }
+      }
+    }, true);
+
+    document.addEventListener('pointerdown', (e) => {
+      const button = e.target.closest('[data-action]');
+      if (!button) return;
+      const [slot, action] = button.dataset.action.split('-');
+      if (action !== 'attack') return;
+      const f = slot === 'p1' ? A : B;
+      if (f) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         window.attack(f);
       }
-    };
-
-    window.hit = function (f, e, d, st, kn, label) {
-      let scaled = d;
-      if (S.comboScale && f && Number.isFinite(f.combo) && f.combo > 4) {
-        const m = Math.max(0.58, 1 - (f.combo - 4) * 0.035);
-        scaled *= m;
-      }
-      baseHit(f, e, scaled, st, kn, label);
-    };
-
-    window.clean = function () {
-      baseClean();
-      S.attackFrame = 0;
-    };
+    }, true);
 
     const frameLoop = () => {
-      if (!S.paused && A && B) {
+      if (!S.paused && S.run && A && B) {
         S.attackFrame += 1;
+        tickAttack(A);
+        tickAttack(B);
       }
       requestAnimationFrame(frameLoop);
     };
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        S.paused = !S.paused;
-        const m = document.querySelector('#centerMessage');
-        if (m) {
-          m.textContent = S.paused ? 'PAUSED · ESC 继续' : 'RESUME';
-          m.classList.remove('show');
-          void m.offsetWidth;
-          m.classList.add('show');
-        }
-      }
-      if (e.key === 'F3') {
-        e.preventDefault();
-        S.attackDebug = !S.attackDebug;
-      }
-    });
 
     const originalDrawFx = window.drawFx;
     window.drawFx = function () {
@@ -152,19 +145,32 @@
       };
       drawBox(A);
       drawBox(B);
-      const showState = (f, x, y) => {
-        const a = f.attackCtx;
-        if (!a) return;
-        X.fillStyle = '#fff0b0';
-        X.font = '10px monospace';
-        X.fillText(`${f.slot} A${a.step} ${a.phase} ${a.timer}`, x, y);
-      };
-      showState(A, 18, 500);
+      X.fillStyle = '#fff0b0';
+      X.font = '10px monospace';
+      if (A.attackCtx) X.fillText(`P1 A${A.attackCtx.step} ${A.attackCtx.phase} ${A.attackCtx.timer}`, 18, 500);
       X.textAlign = 'right';
-      showState(B, W - 18, 500);
+      if (B.attackCtx) X.fillText(`P2 A${B.attackCtx.step} ${B.attackCtx.phase} ${B.attackCtx.timer}`, W - 18, 500);
       X.textAlign = 'left';
       X.restore();
     };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F3') {
+        e.preventDefault();
+        S.attackDebug = !S.attackDebug;
+      }
+      if (e.key === 'Escape' && S.run) {
+        e.preventDefault();
+        S.paused = !S.paused;
+        const m = document.querySelector('#centerMessage');
+        if (m) {
+          m.textContent = S.paused ? 'PAUSED · ESC 继续' : 'RESUME';
+          m.classList.remove('show');
+          void m.offsetWidth;
+          m.classList.add('show');
+        }
+      }
+    });
 
     frameLoop();
   };
