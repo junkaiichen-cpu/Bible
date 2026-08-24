@@ -1,15 +1,16 @@
 {
   "channel": "stable",
-  "version": "1.4.5",
-  "build": "Unified Cooldown Timing Pass",
+  "version": "1.4.6",
+  "build": "Real Combat Interaction Bridge",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.5",
+  "minimumWindows": "1.4.6",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "统一技能 CD 使用真实毫秒时间，不再依赖渲染帧率",
-    "大卫投石索与牧者跃步拥有明确可用/冷却节奏",
-    "替身与密卷纳入统一 CD 时间模型，并在再战时完全重置",
-    "战斗技能栏实时显示 READY / 秒数冷却状态",
-    "Windows smoke 必须验证技能施放、CD 生效与再次可用"
+    "新增独立真实战斗交互桥，保证 Windows EXE 可直接进行本地 2P 移动与格斗",
+    "P1 使用 WASD + J/K/L/I/O/6/7，P2 使用方向键 + 1/2/3/4/5/8/9",
+    "真实移动、跳跃、普攻、技能、替身、奥义、密卷与帮手输入进入统一 battle runtime",
+    "输入路由采用单一 owner，避免旧引擎与新交互层重复触发",
+    "新增真实命中回归与战斗状态快照，禁止只验证 marker 的假可玩状态",
+    "Windows portable、runtime contract、smoke test 统一到 1.4.6"
   ]
 }
