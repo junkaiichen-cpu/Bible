@@ -1,7 +1,7 @@
 {
   "name": "bible-fighter",
-  "version": "0.1.0",
-  "description": "Bible Fighter · 2P local fighting game test build",
+  "version": "0.1.1",
+  "description": "Bible Fighter · Windows playable 2P fighting game build",
   "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
@@ -15,9 +15,20 @@
   "build": {
     "appId": "org.junkaiichen.biblefighter",
     "productName": "Bible Fighter",
-    "files": ["index.html", "style.css", "game6.js", "data/**/*", "electron/**/*"],
+    "files": [
+      "playtest.html",
+      "style.css",
+      "game7.js",
+      "data/**/*",
+      "electron/**/*"
+    ],
     "directories": { "output": "dist" },
-    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] },
-    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }] }
+    "asar": true,
+    "win": {
+      "target": [{ "target": "portable", "arch": ["x64"] }]
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
+    }
   }
 }
