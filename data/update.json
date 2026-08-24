@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.4.3",
-  "build": "David Runtime Hardening Pass",
+  "version": "1.4.4",
+  "build": "David Pixel Model + Skill Quality Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.3",
+  "minimumWindows": "1.4.4",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "大卫 interaction 与 combat polish 延续使用真实 A/B 战斗对象",
-    "修复战斗开始前 David interaction/polish 层过早初始化的问题",
-    "重置回合时清理震屏与终结状态，避免上一回合视觉残留",
-    "Electron portable 构建、runtime、smoke 版本统一到 1.4.3",
-    "Windows 构建必须验证真实大卫普攻、投石索与命中反馈"
+    "升级大卫像素人物模型，增加面部、服装、腰带、披肩、腿部与武器姿态分层",
+    "待机、奔跑、五段攻击、投石索蓄力/释放、牧者跃步与奥义使用独立动作状态",
+    "投石索使用独立蓄力圈、真实石块轨迹与金色拖尾反馈",
+    "牧者跃步使用独立尘土与落点效果，歌利亚之战保留完整终结反馈",
+    "Windows portable、runtime contract、smoke test 统一到 1.4.4"
   ]
 }
