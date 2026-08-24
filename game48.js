@@ -3,7 +3,7 @@
   const boot = () => {
     if (!window.S || !window.A || !window.B) return false;
     const state = window.BIBLE_FIGHTER_RUNTIME_POLISH = window.BIBLE_FIGHTER_RUNTIME_POLISH || {
-      version: '1.5.1', ready: true, frames: 0, last: performance.now(), frameMs: 16.67,
+      version: '1.5.1', ready: true, samples: 0, last: performance.now(), frameMs: 16.67,
       fps: 60, spikes: 0, prunedFx: 0, prunedShots: 0
     };
     const clampArray = (name, max) => {
@@ -15,12 +15,17 @@
       if (name === 'shots') state.prunedShots += remove;
     };
     const reset = () => {
-      state.frames = 0; state.last = performance.now(); state.frameMs = 16.67; state.fps = 60; state.spikes = 0;
+      state.samples = 0; state.last = performance.now(); state.frameMs = 16.67; state.fps = 60; state.spikes = 0;
       for (const key of ['fx', 'shots', 'txt', 'rings']) if (Array.isArray(window.S?.[key])) window.S[key].length = 0;
     };
     const wrap = (name) => {
-      const fn = window[name]; if (typeof fn !== 'function' || fn.__bfWrapped) return;
-      const wrapped = (...args) => { const r = fn(...args); clampArray('fx', 180); clampArray('shots', 32); clampArray('txt', 64); clampArray('rings', 40); return r; };
+      const fn = window[name];
+      if (typeof fn !== 'function' || fn.__bfWrapped) return;
+      const wrapped = (...args) => {
+        const r = fn(...args);
+        clampArray('fx', 180); clampArray('shots', 32); clampArray('txt', 64); clampArray('rings', 40);
+        return r;
+      };
       wrapped.__bfWrapped = true;
       window[name] = wrapped;
     };
@@ -29,19 +34,21 @@
     window.start = (...args) => { reset(); return baseStart?.(...args); };
     window.rematch = (...args) => { reset(); return baseRematch?.(...args); };
     window.back = (...args) => { reset(); return baseBack?.(...args); };
-    let last = performance.now();
-    const loop = now => {
-      const dt = Math.min(100, now - last); last = now;
-      state.frames++;
-      state.frameMs += ((dt || 16.67) - state.frameMs) * 0.08;
-      state.fps = 1000 / Math.max(1, state.frameMs);
-      if (dt > 33.4) state.spikes++;
+    const sample = () => {
+      const now = performance.now();
+      const dt = now - state.last;
+      state.last = now;
+      if (Number.isFinite(dt) && dt > 0) {
+        state.frameMs = state.frameMs * 0.82 + Math.min(100, dt) * 0.18;
+        state.fps = 1000 / Math.max(1, state.frameMs);
+        if (dt > 50) state.spikes++;
+      }
+      state.samples++;
       clampArray('fx', 180); clampArray('shots', 32); clampArray('txt', 64); clampArray('rings', 40);
-      requestAnimationFrame(loop);
     };
     window.BIBLE_FIGHTER_RUNTIME_POLISH_READY = true;
-    window.BIBLE_FIGHTER_RUNTIME_POLISH_API = { snapshot: () => ({ ...state, battle: !!window.S?.run, p1Hp: window.A?.hp ?? 0, p2Hp: window.B?.hp ?? 0 }) };
-    requestAnimationFrame(loop);
+    window.BIBLE_FIGHTER_RUNTIME_POLISH_API = { snapshot: () => ({ ...state, battle: !!window.S?.run, p1Hp: window.A?.hp ?? 0, p2Hp: window.B?.hp ?? 0, effects: { fx: window.S?.fx?.length || 0, shots: window.S?.shots?.length || 0, txt: window.S?.txt?.length || 0, rings: window.S?.rings?.length || 0 } }) };
+    setInterval(sample, 500);
     return true;
   };
   if (!boot()) {
