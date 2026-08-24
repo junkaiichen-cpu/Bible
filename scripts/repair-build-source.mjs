@@ -12,10 +12,12 @@ const fixed = "});$(s+'Label')";
 
 if (original.includes(broken)) {
   writeFileSync(target, original.replace(broken, fixed), 'utf8');
-  console.log(`Repaired ${target}: refreshSelect statement terminator.`);
+  console.log(`Repaired ${target}: legacy refreshSelect statement terminator.`);
 } else if (original.includes(fixed)) {
-  console.log(`${target} already repaired.`);
+  console.log(`${target} legacy refreshSelect syntax already repaired.`);
+} else if (original.includes('window.BIBLE_FIGHTER_SELECTION_READY') && original.includes('window.start') && original.includes('window.attack')) {
+  console.log(`${target} uses canonical combat runtime; no legacy repair required.`);
 } else {
-  console.error(`Expected repair target not found in ${target}. Refusing to continue.`);
+  console.error(`Expected combat runtime markers not found in ${target}. Refusing to continue.`);
   process.exit(1);
 }
