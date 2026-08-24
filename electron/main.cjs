@@ -83,6 +83,13 @@ function createWindow() {
           startButton: Boolean(document.querySelector('#startBtn')),
           selectScreen: Boolean(document.querySelector('#selectScreen')),
           battleScreen: Boolean(document.querySelector('#battleScreen')),
+          p1Cards: document.querySelectorAll('#p1Grid .char-card').length,
+          p2Cards: document.querySelectorAll('#p2Grid .char-card').length,
+          p1ScrollOptions: document.querySelectorAll('#p1Scroll option').length,
+          p2ScrollOptions: document.querySelectorAll('#p2Scroll option').length,
+          p1HelperOptions: document.querySelectorAll('#p1Helper option').length,
+          p2HelperOptions: document.querySelectorAll('#p2Helper option').length,
+          selectionReady: Boolean(window.BIBLE_FIGHTER_SELECTION_READY),
           roster: typeof window.BIBLE_ROSTER === 'object',
           supports: typeof window.BIBLE_SUPPORTS === 'object',
           diagnostics: typeof window.BIBLE_FIGHTER_TEST_API === 'object',
@@ -94,6 +101,13 @@ function createWindow() {
           && probe.startButton
           && probe.selectScreen
           && probe.battleScreen
+          && probe.p1Cards >= 6
+          && probe.p2Cards >= 6
+          && probe.p1ScrollOptions > 0
+          && probe.p2ScrollOptions > 0
+          && probe.p1HelperOptions > 0
+          && probe.p2HelperOptions > 0
+          && probe.selectionReady
           && probe.roster
           && probe.supports
           && probe.diagnostics
