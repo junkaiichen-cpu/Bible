@@ -18,6 +18,7 @@
     document.getElementById('updateCheck')?.addEventListener('click',check);
     document.getElementById('updateOpen')?.addEventListener('click',()=>window.BIBLE_FIGHTER_DESKTOP?.openDownload?.(window.BIBLE_FIGHTER_LIVE_UPDATE?.download||manifest.download));
     const trigger=document.createElement('button'); trigger.id='updateBtn'; trigger.className='ghost-btn update-trigger'; trigger.textContent=`版本 ${currentVersion}`; trigger.title='查看版本与更新'; trigger.addEventListener('click',()=>root.classList.add('show')); document.querySelector('.topbar')?.appendChild(trigger);
+    const quality=document.createElement('script'); quality.src='game35.js'; quality.dataset.bibleQuality='1'; document.body.appendChild(quality);
     window.BIBLE_FIGHTER_UPDATE_CENTER_READY=true;
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
