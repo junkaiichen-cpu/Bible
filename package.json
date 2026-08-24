@@ -1,12 +1,14 @@
 {
   "name": "bible-fighter",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "Bible Fighter · Windows playable 2P fighting game · Build 18 Moses combat",
   "main": "electron/main.cjs",
   "scripts": {
-    "start": "npm run repair:source && electron .",
+    "start": "npm run validate && electron .",
     "repair:source": "node scripts/repair-build-source.mjs",
-    "validate": "npm run repair:source && node scripts/validate-build.mjs",
+    "validate:source": "npm run repair:source && node scripts/validate-build.mjs",
+    "validate:runtime": "node scripts/validate-runtime.mjs",
+    "validate": "npm run validate:source && npm run validate:runtime",
     "dist:win": "npm run validate && electron-builder --win portable",
     "dist": "npm run validate && electron-builder"
   },
