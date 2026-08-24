@@ -1,77 +1,37 @@
-(() => {
-  'use strict';
-
-  const boot = () => {
-    if (!window.S || !window.A || !window.B || typeof window.hit !== 'function') return;
-    const canvas = document.querySelector('#game');
-    if (!canvas) return;
-    const X = canvas.getContext('2d');
-    if (!X) return;
-
-    const polish = window.BIBLE_FIGHTER_DAVID_POLISH = window.BIBLE_FIGHTER_DAVID_POLISH || {
-      version: '1.4.2', ready: true, cameraKick: 0, flash: 0, lastEvent: '', ko: false, hitCount: 0
-    };
-
-    const david = (f) => f?.id === 'david';
-    const baseHit = window.hit;
-
-    window.hit = (attacker, defender, damage, stun, knock, label) => {
-      const before = defender?.hp ?? 0;
-      baseHit(attacker, defender, damage, stun, knock, label);
-      if (!david(attacker) || !defender || !(defender.hp < before)) return;
-      const text = String(label || '命中');
-      polish.lastEvent = text;
-      polish.hitCount += 1;
-      polish.cameraKick = Math.max(polish.cameraKick, text.includes('重') || Number(attacker.step || 0) >= 5 ? 8 : 4);
-      polish.flash = Math.max(polish.flash, text.includes('投石索') ? 8 : 5);
-      if (defender.hp <= 0) polish.ko = true;
-    };
-
-    const syncLifecycle = () => {
-      if ((window.A?.hp ?? 1) > 0 && (window.B?.hp ?? 1) > 0 && polish.ko) polish.ko = false;
-      if (!window.S?.run) { canvas.style.transform = ''; return; }
-      if (polish.cameraKick <= 0) { canvas.style.transform = ''; return; }
-      const amp = Math.min(4, Math.ceil(polish.cameraKick / 2));
-      const x = (polish.cameraKick % 2 ? amp : -amp);
-      const y = (polish.cameraKick % 3) - 1;
-      canvas.style.transform = `translate(${x}px, ${y}px)`;
-      polish.cameraKick--;
-    };
-
-    const drawOverlay = () => {
-      if (polish.flash > 0) {
-        X.save();
-        X.globalAlpha = Math.min(0.18, polish.flash / 45);
-        X.fillStyle = '#f3dfad';
-        X.fillRect(0, 0, canvas.width, canvas.height);
-        X.restore();
-        polish.flash--;
-      }
-      if (polish.ko) {
-        X.save();
-        X.globalAlpha = 0.82;
-        X.fillStyle = '#d8b766';
-        X.fillRect(0, canvas.height * 0.38, canvas.width, canvas.height * 0.20);
-        X.globalAlpha = 1;
-        X.fillStyle = '#120d08';
-        X.textAlign = 'center';
-        X.font = '900 30px sans-serif';
-        X.fillText('歌利亚之战 · 终结', canvas.width / 2, canvas.height * 0.50);
-        X.font = '700 12px sans-serif';
-        X.fillText('大卫的胜利来自信靠，而非力量本身', canvas.width / 2, canvas.height * 0.55);
-        X.restore();
-      }
-    };
-
-    window.BIBLE_FIGHTER_DAVID_POLISH_READY = true;
-    window.BIBLE_FIGHTER_DAVID_POLISH_API = {
-      snapshot: () => ({version: polish.version, cameraKick: polish.cameraKick, flash: polish.flash, lastEvent: polish.lastEvent, hitCount: polish.hitCount, ko: polish.ko})
-    };
-
-    const loop = () => { syncLifecycle(); drawOverlay(); requestAnimationFrame(loop); };
-    loop();
-  };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-  else boot();
+(()=>{
+'use strict';
+let active=false;
+const boot=()=>{
+ if(active||!window.S||!window.A||!window.B||typeof window.hit!=='function') return false;
+ const canvas=document.querySelector('#game'); if(!canvas) return false;
+ const X=canvas.getContext('2d'); if(!X) return false;
+ active=true;
+ const p=window.BIBLE_FIGHTER_DAVID_POLISH=window.BIBLE_FIGHTER_DAVID_POLISH||{version:'1.4.3',ready:true,cameraKick:0,flash:0,lastEvent:'',ko:false,hitCount:0};
+ p.version='1.4.3'; p.cameraKick=0; p.flash=0; p.ko=false;
+ const david=f=>f?.id==='david';
+ const baseHit=window.hit;
+ window.hit=(a,d,damage,stun,knock,label)=>{
+  const before=d?.hp??0; baseHit(a,d,damage,stun,knock,label);
+  if(!david(a)||!d||!(d.hp<before)) return;
+  const text=String(label||'hit'); p.lastEvent=text; p.hitCount++;
+  p.cameraKick=Math.max(p.cameraKick,text.includes('重')||Number(a.step||0)>=5?8:4);
+  p.flash=Math.max(p.flash,text.includes('投石索')?8:5);
+  if(d.hp<=0) p.ko=true;
+ };
+ const lifecycle=()=>{
+  const alive=(window.A?.hp??1)>0&&(window.B?.hp??1)>0;
+  if(alive) p.ko=false;
+  if(!window.S?.run){canvas.style.transform='';p.cameraKick=0;return;}
+  if(p.cameraKick>0){const amp=Math.min(4,Math.ceil(p.cameraKick/2));const x=p.cameraKick%2?amp:-amp;const y=p.cameraKick%3-1;canvas.style.transform=`translate(${x}px,${y}px)`;p.cameraKick--;}else canvas.style.transform='';
+ };
+ const overlay=()=>{
+  if(p.flash>0){X.save();X.globalAlpha=Math.min(.18,p.flash/45);X.fillStyle='#f3dfad';X.fillRect(0,0,canvas.width,canvas.height);X.restore();p.flash--;}
+  if(p.ko&&window.S?.run){X.save();X.globalAlpha=.82;X.fillStyle='#d8b766';X.fillRect(0,canvas.height*.38,canvas.width,canvas.height*.2);X.globalAlpha=1;X.fillStyle='#120d08';X.textAlign='center';X.font='900 30px sans-serif';X.fillText('DAVID · FINISH',canvas.width/2,canvas.height*.50);X.font='700 12px sans-serif';X.fillText('Trust over strength',canvas.width/2,canvas.height*.55);X.restore();}
+ };
+ window.BIBLE_FIGHTER_DAVID_POLISH_READY=true;
+ window.BIBLE_FIGHTER_DAVID_POLISH_API={snapshot:()=>({version:p.version,cameraKick:p.cameraKick,flash:p.flash,lastEvent:p.lastEvent,hitCount:p.hitCount,ko:p.ko})};
+ const loop=()=>{lifecycle();overlay();requestAnimationFrame(loop)};loop();return true;
+};
+const ensure=()=>{if(!boot())setTimeout(ensure,80)};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure,{once:true});else ensure();
 })();
