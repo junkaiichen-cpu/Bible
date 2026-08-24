@@ -1,6 +1,7 @@
-/* Desktop combat input compatibility layer.
- * Keeps the existing Build 10 bindings while adding the common PC layout used by the target fighting-game style.
- * Loaded before game7.js so target keys are handled through the game's public `act()` command router.
+/* PC combat input layer for Bible Fighter 1.5.1.
+ * Target layout: 1P J/U/I/O/K/L/Space and 2P numpad 1/4/5/6/2/3/0.
+ * The legacy P2 row-number bindings remain in game45.js; this layer adds the numpad layout.
+ * This intentionally does not add controller support.
  */
 (function () {
   const handled = new Set();
@@ -23,7 +24,7 @@
     Numpad3: 'h'
   };
 
-  window.addEventListener('keydown', function (e) {
+  window.addEventListener('keydown', (e) => {
     if (e.repeat) {
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -38,11 +39,10 @@
     window.act(slot, action);
   }, true);
 
-  window.addEventListener('keyup', function (e) {
-    if (handled.has(e.code)) {
-      handled.delete(e.code);
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
+  window.addEventListener('keyup', (e) => {
+    if (!handled.has(e.code)) return;
+    handled.delete(e.code);
+    e.preventDefault();
+    e.stopImmediatePropagation();
   }, true);
 })();
