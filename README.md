@@ -2,7 +2,7 @@
 
 一个以圣经人物为核心的 2.5D 横版动作格斗游戏原型。当前重点是可真实操作的 Windows 2P 本地对战构建，并持续向高质量像素横版格斗的战斗手感迭代。
 
-## Build 11 · Combat Feel
+## Build 12 · Frame Combat
 
 当前流程：
 
@@ -10,9 +10,9 @@
 
 ### Windows 桌面构建
 
-Electron 桌面壳直接启动 `playtest.html`，实际运行 Build 10 战斗引擎 + Build 11 战斗手感层；Windows 构建使用 `electron-builder --win portable` 产出可直接运行的 x64 `.exe`。
+Electron 桌面壳直接启动 `playtest.html`；Windows 构建使用 `electron-builder --win portable` 产出可直接运行的 x64 `.exe`。
 
-GitHub Actions 会在 `main` 每次推送后自动构建 Windows x64 portable 版本，并将 `.exe` 作为 workflow artifact 保存。
+GitHub Actions 会在 `main` 每次推送后自动构建 Windows x64 portable 版本，并将 `.exe` 作为 workflow artifact 保存。打包前会运行 `npm run validate`，检查入口、资源和新增 JavaScript 文件语法。
 
 ### 当前战斗输入
 
@@ -28,19 +28,15 @@ P2：方向键 + `1/2/3/4/5/8/9`
 - 密卷
 - 帮手
 
-### Build 11 战斗手感层
+### Build 12 战斗底座
 
-- 5A 连段保持原有逻辑，并强化动作可读性
-- 命中停顿（hit-stop）
-- 受击闪白
-- 重击 / 奥义强化震屏反馈
-- 击飞与高速位移残影
-- 更完整的像素角色动作轮廓
-- 投射物拖尾与冲击线
-- 命中环、粒子与方向性打击反馈
-- 战场像素层次与移动装饰
-
-详细目标见 `COMBAT_TARGET.md`。
+- 5A 分为 **Startup / Active / Recovery** 三阶段
+- 连招输入缓存，减少快速连按丢段
+- 5A 终段具有更明确的击飞与重击反馈
+- 连招长度增加后自动伤害衰减，避免无限高伤
+- F3 开启攻击框 / 当前攻击阶段调试
+- ESC 战斗暂停 / 继续
+- 继承 Build 11 的命中停顿、受击闪白、重击震屏、残影、像素角色动作、投射物拖尾与战场层次
 
 ### 当前核心机制
 
