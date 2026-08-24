@@ -33,19 +33,20 @@ jobs:
         shell: pwsh
         run: |
           $files = @(Get-ChildItem -Path dist -Filter *.exe)
-          if ($files.Count -lt 1) {
-            Write-Error 'No Windows .exe was produced.'
-          }
+          if ($files.Count -lt 1) { Write-Error 'No Windows .exe was produced.' }
           $expected = Join-Path (Get-Location) 'dist\Bible-Fighter-Windows-x64.exe'
-          if (-not (Test-Path $expected)) {
-            Write-Error "Stable Windows asset missing: $expected"
-          }
+          if (-not (Test-Path $expected)) { Write-Error "Stable Windows asset missing: $expected" }
           foreach ($file in $files) {
-            if ($file.Length -lt 10000000) {
-              Write-Error "Windows artifact is unexpectedly small: $($file.Name) ($($file.Length) bytes)"
-            }
+            if ($file.Length -lt 10000000) { Write-Error "Windows artifact is unexpectedly small: $($file.Name) ($($file.Length) bytes)" }
             Write-Host "Verified $($file.FullName) ($($file.Length) bytes)"
           }
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bible-fighter-windows-x64-build
+          path: dist/Bible-Fighter-Windows-x64.exe
+          if-no-files-found: error
+          compression-level: 0
       - name: Smoke test packaged executable
         shell: pwsh
         run: |
@@ -56,29 +57,21 @@ jobs:
             Stop-Process -Id $process.Id -Force
             Write-Error 'Packaged Bible Fighter did not exit from smoke test within 60 seconds.'
           }
-          if ($process.ExitCode -ne 0) {
-            Write-Error "Packaged Bible Fighter smoke test failed with exit code $($process.ExitCode)."
-          }
+          if ($process.ExitCode -ne 0) { Write-Error "Packaged Bible Fighter smoke test failed with exit code $($process.ExitCode)." }
           Write-Host 'Packaged Bible Fighter smoke test passed.'
       - name: Publish smoke diagnostics
         if: always()
         shell: pwsh
         run: |
           $log = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-runtime.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($log) {
-            Copy-Item $log.FullName -Destination runtime-smoke.log -Force
-            Write-Host "Collected runtime log: $($log.FullName)"
-          } else {
-            "No bible-fighter-runtime.log found." | Set-Content runtime-smoke.log
-          }
-      - name: Upload Windows test artifacts
+          if ($log) { Copy-Item $log.FullName -Destination runtime-smoke.log -Force; Write-Host "Collected runtime log: $($log.FullName)" }
+          else { "No bible-fighter-runtime.log found." | Set-Content runtime-smoke.log }
+      - name: Upload Windows smoke diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bible-fighter-windows-x64-test
-          path: |
-            dist/Bible-Fighter-Windows-x64.exe
-            runtime-smoke.log
+          name: bible-fighter-windows-x64-smoke
+          path: runtime-smoke.log
           if-no-files-found: error
       - name: Publish Windows executable to GitHub Release
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -89,11 +82,8 @@ jobs:
           $tag = "build-${{ github.run_number }}"
           $asset = 'dist/Bible-Fighter-Windows-x64.exe'
           $existing = gh release view $tag 2>$null
-          if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag $asset --clobber
-          } else {
-            gh release create $tag $asset --title "Bible Fighter $tag" --notes "Windows x64 portable build. Runtime and real-combat smoke tests passed. Download the EXE below and double-click it to play."
-          }
+          if ($LASTEXITCODE -eq 0) { gh release upload $tag $asset --clobber }
+          else { gh release create $tag $asset --title "Bible Fighter $tag" --notes "Windows x64 portable build. Runtime and real-combat smoke tests passed. Download the EXE below and double-click it to play." }
 
   macos:
     runs-on: macos-latest
