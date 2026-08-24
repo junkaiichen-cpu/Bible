@@ -89,6 +89,7 @@ function createWindow() {
           p2ScrollOptions: document.querySelectorAll('#p2Scroll option').length,
           p1HelperOptions: document.querySelectorAll('#p1Helper option').length,
           p2HelperOptions: document.querySelectorAll('#p2Helper option').length,
+          startDisabled: Boolean(document.querySelector('#startBtn')?.disabled),
           selectionReady: Boolean(window.BIBLE_FIGHTER_SELECTION_READY),
           roster: typeof window.BIBLE_ROSTER === 'object',
           supports: typeof window.BIBLE_SUPPORTS === 'object',
@@ -107,6 +108,7 @@ function createWindow() {
           && probe.p2ScrollOptions > 0
           && probe.p1HelperOptions > 0
           && probe.p2HelperOptions > 0
+          && !probe.startDisabled
           && probe.selectionReady
           && probe.roster
           && probe.supports
@@ -114,6 +116,27 @@ function createWindow() {
           && probe.diagnosticReady;
         if (!ok) {
           console.error(`Runtime boot probe failed: ${JSON.stringify(probe)}`);
+          smokeFailed = true;
+          app.exit(1);
+          return;
+        }
+
+        const selected = await win.webContents.executeJavaScript(`(() => {
+          const p1 = [...document.querySelectorAll('#p1Grid .char-card')][0];
+          const p2 = [...document.querySelectorAll('#p2Grid .char-card')][1];
+          if (!p1 || !p2) return { ok: false, p1: Boolean(p1), p2: Boolean(p2) };
+          p1.click();
+          p2.click();
+          return {
+            ok: true,
+            p1Label: document.querySelector('#p1Label')?.textContent || '',
+            p2Label: document.querySelector('#p2Label')?.textContent || '',
+            startDisabled: Boolean(document.querySelector('#startBtn')?.disabled)
+          };
+        })()`, true);
+        console.log(`[smoke] selection ${JSON.stringify(selected)}`);
+        if (!selected?.ok || selected.p1Label !== '大卫' || selected.p2Label !== '摩西' || selected.startDisabled) {
+          console.error(`Character selection probe failed: ${JSON.stringify(selected)}`);
           smokeFailed = true;
           app.exit(1);
           return;
