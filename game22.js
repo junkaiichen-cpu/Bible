@@ -22,21 +22,50 @@
     wrap.appendChild(layer);
 
     const $ = (id) => document.getElementById(id);
-    const state = { unlocked: false, id: null };
+    const storageKey = 'bible-fighter-codex-v1';
+    const readUnlocked = () => {
+      try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
+    };
+    const initial = readUnlocked();
+    const state = { id: null, unlocked: new Set(Object.keys(initial).filter((id) => initial[id])) };
 
-    const show = (id) => {
+    const persist = (id) => {
+      state.unlocked.add(id);
+      try {
+        const next = {};
+        state.unlocked.forEach((key) => { next[key] = true; });
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch {}
+    };
+
+    const render = (id) => {
       const entry = window.BIBLE_CODEX[id];
       const roster = window.BIBLE_ROSTER?.[id];
-      if (!entry || !roster) return;
-      state.unlocked = true;
+      if (!entry || !roster) return false;
       state.id = id;
       $('codexAvatar').textContent = roster.name.slice(0, 1);
       $('codexTitle').textContent = entry.title;
       $('codexAnchor').textContent = entry.anchor;
       $('codexClue').textContent = entry.clue;
       $('codexNext').textContent = entry.next;
+      return true;
+    };
+
+    const showUnlocked = (id) => {
+      if (!state.unlocked.has(id)) return false;
+      if (!render(id)) return false;
       layer.classList.remove('hidden');
       S.paused = Boolean(S.run);
+      return true;
+    };
+
+    const unlockAndShow = (id) => {
+      if (!window.BIBLE_CODEX[id]) return;
+      persist(id);
+      if (render(id)) {
+        layer.classList.remove('hidden');
+        S.paused = Boolean(S.run);
+      }
     };
 
     const hide = () => {
@@ -49,8 +78,10 @@
       if (e.key === 'F7') {
         e.preventDefault();
         if (!A) return;
-        if (layer.classList.contains('hidden')) show(state.id || A.id);
-        else hide();
+        if (layer.classList.contains('hidden')) {
+          const preferred = state.unlocked.has(A.id) ? A.id : [...state.unlocked][0];
+          if (preferred) showUnlocked(preferred);
+        } else hide();
       }
       if (e.key === 'Escape' && !layer.classList.contains('hidden')) {
         e.preventDefault();
@@ -60,11 +91,12 @@
 
     const observe = () => {
       const m = S.mission;
-      if (m?.complete && m.id && !state.unlocked) show(m.id);
+      if (m?.complete && m.id && !state.unlocked.has(m.id)) unlockAndShow(m.id);
       requestAnimationFrame(observe);
     };
     requestAnimationFrame(observe);
     window.BIBLE_FIGHTER_CODEX_READY = true;
+    window.BIBLE_FIGHTER_CODEX_UNLOCKED = () => [...state.unlocked];
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
