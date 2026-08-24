@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.4.4",
-  "build": "David Pixel Model + Skill Quality Pass",
+  "version": "1.4.5",
+  "build": "Unified Cooldown Timing Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.4",
+  "minimumWindows": "1.4.5",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "升级大卫像素人物模型，增加面部、服装、腰带、披肩、腿部与武器姿态分层",
-    "待机、奔跑、五段攻击、投石索蓄力/释放、牧者跃步与奥义使用独立动作状态",
-    "投石索使用独立蓄力圈、真实石块轨迹与金色拖尾反馈",
-    "牧者跃步使用独立尘土与落点效果，歌利亚之战保留完整终结反馈",
-    "Windows portable、runtime contract、smoke test 统一到 1.4.4"
+    "统一技能 CD 使用真实毫秒时间，不再依赖渲染帧率",
+    "大卫投石索与牧者跃步拥有明确可用/冷却节奏",
+    "替身与密卷纳入统一 CD 时间模型，并在再战时完全重置",
+    "战斗技能栏实时显示 READY / 秒数冷却状态",
+    "Windows smoke 必须验证技能施放、CD 生效与再次可用"
   ]
 }
