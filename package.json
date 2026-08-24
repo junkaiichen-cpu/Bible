@@ -1,9 +1,9 @@
 {
   "name": "bible-fighter",
-  "version": "1.1.4",
-  "description": "Bible Fighter · Windows playable 2P fighting game · Combat HUD, missions, map, identity and biblical codex pass",
+  "version": "1.1.5",
+  "description": "Bible Fighter · Windows playable 2P fighting game · Combat HUD, missions, map, identity, codex and battle briefing pass",
   "main": "electron/main.cjs",
   "scripts": {"start":"npm run validate && electron .","repair:source":"node scripts/repair-build-source.mjs","validate:source":"npm run repair:source && node scripts/validate-build.mjs","validate:runtime":"node scripts/validate-runtime.mjs","validate":"npm run validate:source && npm run validate:runtime","dist:win":"npm run validate && electron-builder --win portable","dist":"npm run validate && electron-builder"},
   "devDependencies":{"electron":"^38.1.0","electron-builder":"^26.0.12"},
-  "build":{"appId":"org.junkaiichen.biblefighter","productName":"Bible Fighter","artifactName":"Bible-Fighter-Windows-x64.${ext}","files":["playtest.html","style.css","game7.js","game8.js","game9.js","game10.js","game11.js","game12.js","game13.js","game14.js","game15.js","game19.js","game20.js","game21.js","game22.js","game8.css","game20.css","game21.css","game22.css","data/**/*","electron/**/*"],"directories":{"output":"dist"},"asar":true,"win":{"target":[{"target":"portable","arch":["x64"]}]},"mac":{"target":[{"target":"dmg","arch":["x64","arm64"]}]}}
+  "build":{"appId":"org.junkaiichen.biblefighter","productName":"Bible Fighter","artifactName":"Bible-Fighter-Windows-x64.${ext}","files":["playtest.html","style.css","game7.js","game8.js","game9.js","game10.js","game11.js","game12.js","game13.js","game14.js","game15.js","game19.js","game20.js","game21.js","game22.js","game23.js","game8.css","game20.css","game21.css","game22.css","game23.css","data/**/*","electron/**/*"],"directories":{"output":"dist"},"asar":true,"win":{"target":[{"target":"portable","arch":["x64"]}]},"mac":{"target":[{"target":"dmg","arch":["x64","arm64"]}]}}
 }
