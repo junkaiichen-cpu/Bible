@@ -1,6 +1,6 @@
 {
   "name":"bible-fighter",
-  "version":"1.2.0",
+  "version":"1.2.1",
   "description":"Bible Fighter · Windows first executable local 2P battle · Combat HUD, missions, map, codex, frame rules, David art and impact pass",
   "main":"electron/main.cjs",
   "scripts":{"start":"npm run validate && electron .","repair:source":"node scripts/repair-build-source.mjs","validate:source":"npm run repair:source && node scripts/validate-build.mjs","validate:runtime":"node scripts/validate-runtime.mjs","validate":"npm run validate:source && npm run validate:runtime","dist:win":"npm run validate && electron-builder --win portable","dist":"npm run validate && electron-builder"},
