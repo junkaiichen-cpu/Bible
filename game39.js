@@ -2,7 +2,7 @@
   'use strict';
 
   const boot = () => {
-    if (!window.S || !window.A || !window.B || typeof window.update !== 'function' || typeof window.act !== 'function' || typeof window.hit !== 'function') return;
+    if (!window.S || typeof window.update !== 'function' || typeof window.act !== 'function' || typeof window.hit !== 'function') return;
 
     const baseAct = window.act;
     const baseUpdate = window.update;
@@ -57,7 +57,6 @@
     };
 
     window.update = (f, dt) => {
-      // During hit-stop, freeze both fighters briefly so the impact reads as a deliberate game-feel event.
       if (feel.hitStopFrames > 0) {
         if (f?.slot === 'p1') feel.hitStopFrames -= 1;
         return;
@@ -66,7 +65,6 @@
       baseUpdate(f, dt);
       if (!f) return;
 
-      // Auto-facing keeps close-range fighting readable without overriding player movement.
       const e = f.slot === 'p1' ? window.B : window.A;
       if (e && f.st <= 0 && f.lock <= 0 && f.skillBusy <= 0) {
         f.f = e.x >= f.x ? 1 : -1;
