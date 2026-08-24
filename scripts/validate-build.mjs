@@ -20,11 +20,11 @@ for (const marker of ['BIBLE_FIGHTER_MULTIPLAYER_READY','BIBLE_FIGHTER_MULTIPLAY
 for (const marker of ['BIBLE_FIGHTER_STAGE_READY','BIBLE_FIGHTER_STAGE','red-sea','elah-valley','2.2-2d-stage']) if (!readFileSync('game29.js','utf8').includes(marker)) { console.error(`Build validation failed: game29.js missing required 2D stage marker: ${marker}`); process.exit(1); }
 for (const marker of ['BIBLE_FIGHTER_CORE_CHARACTERS_READY','BIBLE_FIGHTER_CORE_CHARACTERS','david','moses']) if (!readFileSync('game30.js','utf8').includes(marker)) { console.error(`Build validation failed: game30.js missing core fighter marker: ${marker}`); process.exit(1); }
 if (!readFileSync('game31.js','utf8').includes('BIBLE_FIGHTER_READABILITY_READY')) { console.error('Build validation failed: readability runtime marker missing.'); process.exit(1); }
-for (const marker of ['BIBLE_FIGHTER_STABILITY_READY','BIBLE_FIGHTER_TRIGGER_HITSTOP','bounds','separation']) if (!readFileSync('game32.js','utf8').includes(marker)) { console.error(`Build validation failed: stability marker missing: ${marker}`); process.exit(1); }
+for (const marker of ['BIBLE_FIGHTER_STABILITY_READY','BIBLE_FIGHTER_TRIGGER_HITSTOP','BIBLE_FIGHTER_CLEAR_INPUT','bounds','separation']) if (!readFileSync('game32.js','utf8').includes(marker)) { console.error(`Build validation failed: stability marker missing: ${marker}`); process.exit(1); }
 for (const marker of ['BIBLE_FIGHTER_MATCH_READY','BIBLE_FIGHTER_RESET_INPUT','BIBLE_FIGHTER_MATCH_SYNC','epoch']) if (!readFileSync('game33.js','utf8').includes(marker)) { console.error(`Build validation failed: match lifecycle marker missing: ${marker}`); process.exit(1); }
 
 for (const file of ['game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','game29.js','game30.js','game31.js','game32.js','game33.js','electron/main.cjs']) {
   const result = spawnSync(process.execPath,['--check',file],{stdio:'inherit'});
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
-console.log('Build validation passed: combat runtime + HUD + identity + codex + briefing + frame rules + David art/impact + local 2P + 2D stages + production fighters + readability + stability + match lifecycle present.');
+console.log('Build validation passed: combat runtime + HUD + identity + codex + briefing + frame rules + David art/impact + local 2P + 2D stages + production fighters + readability + stability + match lifecycle + canonical input reset present.');
