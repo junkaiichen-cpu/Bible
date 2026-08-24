@@ -12,7 +12,8 @@ const required = [
   'game8.css',
   'data/characters.js',
   'data/supports.js',
-  'electron/main.cjs'
+  'electron/main.cjs',
+  'Playtest-Windows.bat'
 ];
 
 const missing = required.filter((file) => !existsSync(file));
