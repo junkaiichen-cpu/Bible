@@ -60,13 +60,28 @@ jobs:
             Write-Error "Packaged Bible Fighter smoke test failed with exit code $($process.ExitCode)."
           }
           Write-Host 'Packaged Bible Fighter smoke test passed.'
-      - uses: actions/upload-artifact@v4
+      - name: Publish smoke diagnostics
+        if: always()
+        shell: pwsh
+        run: |
+          $log = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-runtime.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($log) {
+            Copy-Item $log.FullName -Destination runtime-smoke.log -Force
+            Write-Host "Collected runtime log: $($log.FullName)"
+          } else {
+            "No bible-fighter-runtime.log found." | Set-Content runtime-smoke.log
+          }
+      - name: Upload Windows test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: bible-fighter-windows-x64
-          path: dist/Bible-Fighter-Windows-x64.exe
+          name: bible-fighter-windows-x64-test
+          path: |
+            dist/Bible-Fighter-Windows-x64.exe
+            runtime-smoke.log
           if-no-files-found: error
       - name: Publish Windows executable to GitHub Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
