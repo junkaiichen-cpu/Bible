@@ -1,16 +1,20 @@
 (() => {
   'use strict';
 
+  let active = false;
+
   const boot = () => {
-    if (!window.S || !window.A || !window.B || typeof window.hit !== 'function') return;
+    if (active) return true;
+    if (!window.S || !window.A || !window.B || typeof window.hit !== 'function') return false;
     const canvas = document.querySelector('#game');
-    if (!canvas) return;
+    if (!canvas) return false;
     const X = canvas.getContext('2d');
-    if (!X) return;
+    if (!X) return false;
+    active = true;
     X.imageSmoothingEnabled = false;
 
     const model = window.BIBLE_FIGHTER_DAVID_MODEL = window.BIBLE_FIGHTER_DAVID_MODEL || {};
-    model.syncVersion = '1.4.1';
+    model.syncVersion = '1.4.3';
     model.lastHit = model.lastHit || '';
     model.hitFlash = 0;
     model.skillFlash = 0;
@@ -38,12 +42,10 @@
       const next = new Set();
       for (const shot of shots) {
         if (!shot?.o || !david(shot.o)) continue;
-        const key = shot;
-        next.add(key);
+        next.add(shot);
         const dir = shot.o.f || 1;
-        const gold = '#d5b46b';
         X.globalAlpha = 0.35;
-        X.fillStyle = gold;
+        X.fillStyle = '#d5b46b';
         X.fillRect(Math.round(shot.x - dir * 18), Math.round(shot.y - 2), 20, 4);
         X.globalAlpha = 1;
         X.fillStyle = '#e9d6a5';
@@ -56,9 +58,8 @@
 
     const drawHitFeedback = () => {
       if ((model.hitFlash || 0) <= 0) return;
-      const f = window.A;
       const e = window.B;
-      if (!f || !e) return;
+      if (!e) return;
       const x = (e.x || 0) + 21;
       const y = (e.y || 0) + 30;
       X.globalAlpha = Math.min(0.75, model.hitFlash / 7);
@@ -74,7 +75,7 @@
     };
 
     const drawSkillFlash = () => {
-      if ((model.skillFlash || 0) <= 0) return;
+      if ((model.skillFlash || 0) <= 0 || !window.S?.run) return;
       const f = david(window.A) ? window.A : window.B;
       if (!f) return;
       const alpha = Math.min(0.35, model.skillFlash / 24);
@@ -104,8 +105,14 @@
       requestAnimationFrame(loop);
     };
     loop();
+    return true;
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-  else boot();
+  const ensure = () => {
+    if (boot()) return;
+    setTimeout(ensure, 80);
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure, { once: true });
+  else ensure();
 })();
