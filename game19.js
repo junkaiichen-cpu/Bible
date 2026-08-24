@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const version = '1.0.1-combat-smoke';
+  const version = '1.0.2-combat-smoke';
   const diagnostics = {
     version,
     ready: false,
@@ -24,12 +24,23 @@
   window.addEventListener('error', (event) => capture(event.error?.stack || event.message || 'window error'));
   window.addEventListener('unhandledrejection', (event) => capture(event.reason?.stack || event.reason || 'unhandled rejection'));
 
+  const readGlobal = (name) => {
+    try {
+      return window[name];
+    } catch {
+      return undefined;
+    }
+  };
+
   const snapshot = () => {
     diagnostics.frame += 1;
-    diagnostics.round = typeof S === 'object' && S ? S.r || 0 : 0;
-    diagnostics.score = typeof S === 'object' && S ? [...(S.score || [0, 0])] : [0, 0];
-    diagnostics.phase = typeof S === 'object' && S ? (S.run ? 'battle' : 'idle') : 'boot';
-    diagnostics.fighters = [A, B].filter(Boolean).map((f) => ({
+    const state = readGlobal('S');
+    const fighterA = readGlobal('A');
+    const fighterB = readGlobal('B');
+    diagnostics.round = state?.r || 0;
+    diagnostics.score = Array.isArray(state?.score) ? [...state.score] : [0, 0];
+    diagnostics.phase = state?.run ? 'battle' : 'idle';
+    diagnostics.fighters = [fighterA, fighterB].filter(Boolean).map((f) => ({
       slot: f.slot,
       id: f.id,
       hp: Math.round(f.hp),
@@ -40,12 +51,15 @@
       ult: Math.round(f.u || 0),
       st: Math.round(f.st || 0)
     }));
+    return diagnostics;
   };
 
   const boot = () => {
     try {
       if (!window.BIBLE_ROSTER || !window.BIBLE_SUPPORTS) throw new Error('combat data unavailable');
-      if (!window.start || !window.act) throw new Error('combat actions unavailable');
+      if (typeof window.start !== 'function' || typeof window.act !== 'function') {
+        throw new Error('combat actions unavailable');
+      }
       diagnostics.ready = true;
       diagnostics.phase = 'ready';
       snapshot();
@@ -58,18 +72,20 @@
   window.BIBLE_FIGHTER_TEST_API = {
     selectAndStart(p1 = 'david', p2 = 'moses') {
       if (!diagnostics.ready) throw new Error('diagnostics not ready');
-      S.pick.p1 = p1;
-      S.pick.p2 = p2;
-      S.pick.sc1 = document.querySelector('#p1Scroll')?.value || S.pick.sc1;
-      S.pick.sc2 = document.querySelector('#p2Scroll')?.value || S.pick.sc2;
-      S.pick.h1 = document.querySelector('#p1Helper')?.value || S.pick.h1;
-      S.pick.h2 = document.querySelector('#p2Helper')?.value || S.pick.h2;
-      start();
+      const state = readGlobal('S');
+      if (!state?.pick) throw new Error('combat state unavailable');
+      state.pick.p1 = p1;
+      state.pick.p2 = p2;
+      state.pick.sc1 = document.querySelector('#p1Scroll')?.value || state.pick.sc1;
+      state.pick.sc2 = document.querySelector('#p2Scroll')?.value || state.pick.sc2;
+      state.pick.h1 = document.querySelector('#p1Helper')?.value || state.pick.h1;
+      state.pick.h2 = document.querySelector('#p2Helper')?.value || state.pick.h2;
+      window.start();
       diagnostics.lastAction = `start:${p1}:${p2}`;
       return true;
     },
     press(slot, action) {
-      act(slot, action);
+      window.act(slot, action);
       diagnostics.lastAction = `${slot}:${action}`;
       return true;
     },
