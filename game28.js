@@ -11,7 +11,6 @@
     };
 
     const mark = (slot, key, pressed) => { input[slot][key] = pressed; };
-
     const onKeyDown = (e) => {
       const key = e.key.toLowerCase();
       for (const slot of ['p1','p2']) {
@@ -19,8 +18,7 @@
         if (!action) continue;
         mark(slot, action, true);
         if (['attack','skill1','skill2','sub','ult','scroll','helper'].includes(action)) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
+          e.preventDefault(); e.stopImmediatePropagation();
           act(slot, action === 'attack' ? 'a' : action === 'skill1' ? 's1' : action === 'skill2' ? 's2' : action === 'sub' ? 'r' : action === 'ult' ? 'u' : action === 'scroll' ? 'c' : 'h');
         }
       }
@@ -37,8 +35,7 @@
 
     const loopMovement = () => {
       if (S.run && !S.paused) {
-        const pairs = [['p1', window.A], ['p2', window.B]];
-        for (const [slot, f] of pairs) {
+        for (const [slot, f] of [['p1', window.A], ['p2', window.B]]) {
           if (!f) continue;
           const q = input[slot];
           if (q.left) f.vx = Math.max(f.vx - f.sp * 0.45, -f.sp * 1.4);
@@ -54,15 +51,10 @@
     window.BIBLE_FIGHTER_MULTIPLAYER_READY = true;
     window.BIBLE_FIGHTER_MULTIPLAYER = {
       version: '1.0-local-2p',
-      mode: 'same-keyboard',
-      slots: ['p1','p2'],
-      bindings,
-      input,
+      slots: ['p1','p2'], bindings, input,
       snapshot() {
         return {
-          ready: true,
-          run: !!S.run,
-          score: Array.isArray(S.score) ? [...S.score] : [0,0],
+          ready: true, run: !!S.run, score: Array.isArray(S.score) ? [...S.score] : [0,0],
           p1: window.A ? { id:A.id, hp:A.hp, max:A.max, x:A.x, y:A.y, sub:A.sub, ult:A.u, combo:A.combo } : null,
           p2: window.B ? { id:B.id, hp:B.hp, max:B.max, x:B.x, y:B.y, sub:B.sub, ult:B.u, combo:B.combo } : null,
           over: !!S.over
@@ -71,6 +63,6 @@
     };
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
   else boot();
 })();
