@@ -64,11 +64,23 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $log = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-runtime.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          $roots = @($env:APPDATA, $env:LOCALAPPDATA, (Get-Location).Path)
+          $log = $null
+          $trace = $null
+          foreach ($root in $roots) {
+            if (-not $root) { continue }
+            $log = Get-ChildItem -Path $root -Filter bible-fighter-runtime.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($log) { break }
+          }
           if ($log) { Copy-Item $log.FullName -Destination runtime-smoke.log -Force; Write-Host "Collected runtime log: $($log.FullName)" }
-          else { "No bible-fighter-runtime.log found." | Set-Content runtime-smoke.log }
-          $trace = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-smoke.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($trace) { Copy-Item $trace.FullName -Destination runtime-smoke-trace.log -Force }
+          else { "No bible-fighter-runtime.log found in APPDATA, LOCALAPPDATA, or workspace." | Set-Content runtime-smoke.log }
+          foreach ($root in $roots) {
+            if (-not $root) { continue }
+            $trace = Get-ChildItem -Path $root -Filter bible-fighter-smoke.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($trace) { break }
+          }
+          if ($trace) { Copy-Item $trace.FullName -Destination runtime-smoke-trace.log -Force; Write-Host "Collected smoke trace: $($trace.FullName)" }
+          Get-ChildItem -Path @($env:APPDATA,$env:LOCALAPPDATA) -Filter "*bible-fighter*" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 20 FullName | Format-Table -AutoSize
       - name: Upload Windows smoke diagnostics
         if: always()
         uses: actions/upload-artifact@v4
