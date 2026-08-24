@@ -1,7 +1,7 @@
 {
   "name": "bible-fighter",
-  "version": "0.7.0",
-  "description": "Bible Fighter · Windows playable 2P fighting game · Build 16 David combat master",
+  "version": "0.8.0",
+  "description": "Bible Fighter · Windows playable 2P fighting game · Build 17 stage feel",
   "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
@@ -26,6 +26,7 @@
       "game11.js",
       "game12.js",
       "game13.js",
+      "game14.js",
       "game8.css",
       "data/**/*",
       "electron/**/*"
