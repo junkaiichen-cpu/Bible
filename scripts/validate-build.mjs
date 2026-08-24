@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
-const required = ['playtest.html','style.css','game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game8.css','game20.css','game21.css','game22.css','game23.css','data/characters.js','data/supports.js','data/missions.js','data/codex.js','electron/main.cjs','Playtest-Windows.bat'];
+const required = ['playtest.html','style.css','game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','game8.css','game20.css','game21.css','game22.css','game23.css','data/characters.js','data/supports.js','data/missions.js','data/codex.js','electron/main.cjs','Playtest-Windows.bat'];
 const missing = required.filter((file) => !existsSync(file));
 if (missing.length) { console.error('Missing required build files:\n' + missing.join('\n')); process.exit(1); }
 
@@ -16,9 +16,10 @@ for (const marker of ['BIBLE_FIGHTER_COMBAT_FRAMES_READY','BIBLE_MOVE_DATA','mov
 for (const marker of ['BIBLE_FIGHTER_FRAME_RULES_READY','frame-runtime-v1','BIBLE_FIGHTER_FRAME_RULES']) if (!readFileSync('game25.js','utf8').includes(marker)) { console.error(`Build validation failed: game25.js missing enforced frame marker: ${marker}`); process.exit(1); }
 for (const marker of ['BIBLE_FIGHTER_DAVID_ART_READY','davidFx','Valley of Elah']) if (!readFileSync('game26.js','utf8').includes(marker)) { console.error(`Build validation failed: game26.js missing David art marker: ${marker}`); process.exit(1); }
 for (const marker of ['BIBLE_FIGHTER_DAVID_IMPACT_READY','davidImpact','守住阵线']) if (!readFileSync('game27.js','utf8').includes(marker)) { console.error(`Build validation failed: game27.js missing David impact marker: ${marker}`); process.exit(1); }
+for (const marker of ['BIBLE_FIGHTER_MULTIPLAYER_READY','BIBLE_FIGHTER_MULTIPLAYER','local-2p']) if (!readFileSync('game28.js','utf8').includes(marker)) { console.error(`Build validation failed: game28.js missing local multiplayer marker: ${marker}`); process.exit(1); }
 
-for (const file of ['game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','electron/main.cjs']) {
+for (const file of ['game7.js','game8.js','game9.js','game10.js','game11.js','game12.js','game13.js','game14.js','game15.js','game19.js','game20.js','game21.js','game22.js','game23.js','game24.js','game25.js','game26.js','game27.js','game28.js','electron/main.cjs']) {
   const result = spawnSync(process.execPath,['--check',file],{stdio:'inherit'});
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
-console.log('Build validation passed: combat runtime + HUD + identity + codex + briefing + enforced frame + David art + impact layers present.');
+console.log('Build validation passed: combat runtime + HUD + identity + codex + briefing + enforced frame + David art + impact + local 2P layers present.');
