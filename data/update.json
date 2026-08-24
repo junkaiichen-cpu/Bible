@@ -1,16 +1,16 @@
 {
   "channel": "stable",
-  "version": "1.4.6",
-  "build": "Real Combat Interaction Bridge",
+  "version": "1.5.0",
+  "build": "Complete Battle Vertical Slice",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.6",
+  "minimumWindows": "1.5.0",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "新增独立真实战斗交互桥，保证 Windows EXE 可直接进行本地 2P 移动与格斗",
-    "P1 使用 WASD + J/K/L/I/O/6/7，P2 使用方向键 + 1/2/3/4/5/8/9",
-    "真实移动、跳跃、普攻、技能、替身、奥义、密卷与帮手输入进入统一 battle runtime",
-    "输入路由采用单一 owner，避免旧引擎与新交互层重复触发",
-    "新增真实命中回归与战斗状态快照，禁止只验证 marker 的假可玩状态",
-    "Windows portable、runtime contract、smoke test 统一到 1.4.6"
+    "新增完整战斗场景 Vertical Slice：人物模型、战场背景、技能建模与实时特效",
+    "大卫拥有牧羊人服装、投石索、疾奔与歌利亚终结表现",
+    "摩西拥有长袍、杖与红海技能场景表现",
+    "以拉谷与红海分别使用独立背景与战场层次",
+    "真实移动、跳跃、普攻、技能、替身、奥义、密卷与帮手继续使用统一 battle runtime",
+    "Windows portable、runtime contract、smoke test 全部统一到 1.5.0"
   ]
 }
