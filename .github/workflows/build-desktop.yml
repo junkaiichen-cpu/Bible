@@ -47,6 +47,7 @@ jobs:
           path: dist/Bible-Fighter-Windows-x64.exe
           if-no-files-found: error
           compression-level: 0
+          overwrite: true
       - name: Smoke test packaged executable
         shell: pwsh
         run: |
@@ -66,13 +67,19 @@ jobs:
           $log = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-runtime.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($log) { Copy-Item $log.FullName -Destination runtime-smoke.log -Force; Write-Host "Collected runtime log: $($log.FullName)" }
           else { "No bible-fighter-runtime.log found." | Set-Content runtime-smoke.log }
+          $trace = Get-ChildItem -Path $env:LOCALAPPDATA -Filter bible-fighter-smoke.log -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($trace) { Copy-Item $trace.FullName -Destination runtime-smoke-trace.log -Force }
       - name: Upload Windows smoke diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bible-fighter-windows-x64-smoke
-          path: runtime-smoke.log
-          if-no-files-found: error
+          path: |
+            runtime-smoke.log
+            runtime-smoke-trace.log
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: true
       - name: Publish Windows executable to GitHub Release
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: pwsh
