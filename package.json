@@ -1,7 +1,7 @@
 {
   "name": "bible-fighter",
-  "version": "1.0.4",
-  "description": "Bible Fighter · Windows playable 2P fighting game · Build 18 Moses combat",
+  "version": "1.0.5",
+  "description": "Bible Fighter · Windows playable 2P fighting game · Canonical combat runtime restored",
   "main": "electron/main.cjs",
   "scripts": {
     "start": "npm run validate && electron .",
@@ -39,11 +39,7 @@
     ],
     "directories": { "output": "dist" },
     "asar": true,
-    "win": {
-      "target": [{ "target": "portable", "arch": ["x64"] }]
-    },
-    "mac": {
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
-    }
+    "win": { "target": [{ "target": "portable", "arch": ["x64"] }] },
+    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }] }
   }
 }
