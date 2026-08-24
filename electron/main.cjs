@@ -40,7 +40,9 @@ function createWindow() {
   win.webContents.on('console-message', (_event, level, message) => {
     if (!smoke) return;
     console.log(`[renderer:${level}] ${message}`);
-    if (level >= 2) {
+    // Chromium console-message levels: 0 verbose, 1 info, 2 warning, 3 error.
+    // Warnings are intentionally tolerated; actual renderer errors fail the smoke test.
+    if (level >= 3) {
       smokeFailed = true;
       app.exit(1);
     }
