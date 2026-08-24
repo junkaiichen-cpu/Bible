@@ -1,5 +1,5 @@
 const { contextBridge, shell } = require('electron');
-const APP_VERSION='1.4.5';
+const APP_VERSION='1.4.6';
 const UPDATE_JSON_URL='https://raw.githubusercontent.com/junkaiichen-cpu/Bible/main/data/update.json';
 const originalGetElementById=document.getElementById.bind(document);
 const legacyIds=new Map([['aboutBtn','button'],['closeAbout','button'],['aboutDialog','dialog'],['fightLoreTitle','div'],['fightLore','div']]);
@@ -10,6 +10,6 @@ const checkForUpdate=async()=>{try{const response=await fetch(UPDATE_JSON_URL,{c
 const syncVersionUi=()=>{document.title=`约谷 · Bible Fighter ${APP_VERSION}`;const eyebrow=[...document.querySelectorAll('.eyebrow')].find(el=>/BIBLE FIGHTER/.test(el.textContent||''));if(eyebrow)eyebrow.textContent=`BIBLE FIGHTER · ${APP_VERSION} · LOCAL 2P`;};
 const mountUpdateCenter=()=>{const head=document.head||document.documentElement,body=document.body||document.documentElement;if(!head||!body||document.querySelector('script[data-bible-update-manifest]'))return;const css=document.createElement('link');css.rel='stylesheet';css.href='game34.css';css.dataset.bibleUpdate='1';head.appendChild(css);const manifest=document.createElement('script');manifest.src='data/update-manifest.js';manifest.dataset.bibleUpdateManifest='1';manifest.onload=()=>{if(document.querySelector('script[src="game34.js"]'))return;const script=document.createElement('script');script.src='game34.js';script.dataset.bibleUpdate='1';body.appendChild(script);};body.appendChild(manifest);};
 const mountScript=(src,dataKey)=>{const body=document.body||document.documentElement;if(!body||document.querySelector(`script[src="${src}"]`))return;const script=document.createElement('script');script.src=src;script.dataset[dataKey]='1';body.appendChild(script);};
-const boot=()=>{syncVersionUi();mountUpdateCenter();mountScript('game43.js','bibleDavidPolish');mountScript('game44.js','bibleCooldown');};
+const boot=()=>{syncVersionUi();mountUpdateCenter();mountScript('game43.js','bibleDavidPolish');mountScript('game44.js','bibleCooldown');mountScript('game45.js','bibleRealCombat');};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 contextBridge.exposeInMainWorld('BIBLE_FIGHTER_DESKTOP',{version:APP_VERSION,updateUrl:UPDATE_JSON_URL,checkForUpdate,openDownload:url=>shell.openExternal(url)});
