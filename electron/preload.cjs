@@ -1,4 +1,4 @@
-const { contextBridge } = require('electron');
+const { contextBridge, shell } = require('electron');
 
 const originalGetElementById = document.getElementById.bind(document);
 const legacyIds = new Map([
@@ -26,4 +26,7 @@ document.getElementById = function getElementByIdCompat(id) {
   return originalGetElementById(id) || ensureLegacyNode(id);
 };
 
-contextBridge.exposeInMainWorld('BIBLE_FIGHTER_DESKTOP', { version: '1.0.3' });
+contextBridge.exposeInMainWorld('BIBLE_FIGHTER_DESKTOP', {
+  version: '1.2.7',
+  openDownload: (url) => shell.openExternal(url)
+});
