@@ -1,6 +1,6 @@
 const { contextBridge, shell } = require('electron');
 
-const APP_VERSION = '1.2.7';
+const APP_VERSION = '1.2.8';
 const UPDATE_JSON_URL = 'https://raw.githubusercontent.com/junkaiichen-cpu/Bible/main/data/update.json';
 
 const originalGetElementById = document.getElementById.bind(document);
@@ -21,9 +21,7 @@ const checkForUpdate = async () => {
     if (!response.ok) return { error:`HTTP ${response.status}`, available:false, version:APP_VERSION };
     const remote = await response.json();
     return { available:compareVersions(remote.version, APP_VERSION)>0, version:remote.version||APP_VERSION, build:remote.build||'', download:remote.download||'', notes:Array.isArray(remote.notes)?remote.notes:[] };
-  } catch (error) {
-    return { error:String(error), available:false, version:APP_VERSION };
-  }
+  } catch (error) { return { error:String(error), available:false, version:APP_VERSION }; }
 };
 
 const mountUpdateCenter = () => {
