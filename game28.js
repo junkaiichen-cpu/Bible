@@ -2,7 +2,7 @@
   'use strict';
 
   const boot = () => {
-    if (!window.act || !window.start || !window.rematch || !window.S || !window.A && !window.B) return;
+    if (!window.act || !window.start || !window.rematch || !window.S) return;
 
     const input = { p1: Object.create(null), p2: Object.create(null) };
     const bindings = {
@@ -54,6 +54,7 @@
     window.BIBLE_FIGHTER_MULTIPLAYER_READY = true;
     window.BIBLE_FIGHTER_MULTIPLAYER = {
       version: '1.0-local-2p',
+      mode: 'same-keyboard',
       slots: ['p1','p2'],
       bindings,
       input,
