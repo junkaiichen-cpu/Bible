@@ -94,40 +94,26 @@ function createWindow() {
           roster: typeof window.BIBLE_ROSTER === 'object',
           supports: typeof window.BIBLE_SUPPORTS === 'object',
           missions: typeof window.BIBLE_MISSIONS === 'object',
+          codex: typeof window.BIBLE_CODEX === 'object',
           diagnostics: typeof window.BIBLE_FIGHTER_TEST_API === 'object',
           diagnosticReady: Boolean(window.BIBLE_FIGHTER_DIAGNOSTICS?.ready),
-          hudScript: Boolean(document.querySelector('.combat-ui')),
-          missionPanel: Boolean(document.querySelector('.mission-panel')),
-          skillDeck: Boolean(document.querySelector('.skill-deck')),
-          battleMap: Boolean(document.querySelector('.battle-map')),
-          identityLayer: Boolean(document.querySelector('.combat-identity-layer')),
-          game21Css: [...document.styleSheets].some(s => (s.href || '').includes('game21.css'))
+          hud: Boolean(document.querySelector('.combat-ui')),
+          mission: Boolean(document.querySelector('.mission-panel')),
+          skills: Boolean(document.querySelector('.skill-deck')),
+          map: Boolean(document.querySelector('.battle-map')),
+          identity: Boolean(document.querySelector('.combat-identity-layer')),
+          codexLayer: Boolean(document.querySelector('.codex-layer'))
         }))()`, true);
         console.log(`[smoke] boot ${JSON.stringify(probe)}`);
         const ok = probe.ready === 'complete'
-          && probe.canvas
-          && probe.startButton
-          && probe.selectScreen
-          && probe.battleScreen
-          && probe.p1Cards >= 6
-          && probe.p2Cards >= 6
-          && probe.p1ScrollOptions > 0
-          && probe.p2ScrollOptions > 0
-          && probe.p1HelperOptions > 0
-          && probe.p2HelperOptions > 0
-          && !probe.startDisabled
-          && probe.selectionReady
-          && probe.roster
-          && probe.supports
-          && probe.missions
-          && probe.diagnostics
-          && probe.diagnosticReady
-          && probe.hudScript
-          && probe.missionPanel
-          && probe.skillDeck
-          && probe.battleMap
-          && probe.identityLayer
-          && probe.game21Css;
+          && probe.canvas && probe.startButton && probe.selectScreen && probe.battleScreen
+          && probe.p1Cards >= 6 && probe.p2Cards >= 6
+          && probe.p1ScrollOptions > 0 && probe.p2ScrollOptions > 0
+          && probe.p1HelperOptions > 0 && probe.p2HelperOptions > 0
+          && !probe.startDisabled && probe.selectionReady
+          && probe.roster && probe.supports && probe.missions && probe.codex
+          && probe.diagnostics && probe.diagnosticReady
+          && probe.hud && probe.mission && probe.skills && probe.map && probe.identity && probe.codexLayer;
         if (!ok) {
           console.error(`Runtime boot probe failed: ${JSON.stringify(probe)}`);
           smokeFailed = true;
@@ -139,36 +125,22 @@ function createWindow() {
           const p1 = [...document.querySelectorAll('#p1Grid .char-card')][0];
           const p2 = [...document.querySelectorAll('#p2Grid .char-card')][1];
           if (!p1 || !p2) return { ok: false, p1: Boolean(p1), p2: Boolean(p2) };
-          p1.click();
-          p2.click();
-          return {
-            ok: true,
-            p1Label: document.querySelector('#p1Label')?.textContent || '',
-            p2Label: document.querySelector('#p2Label')?.textContent || '',
-            startDisabled: Boolean(document.querySelector('#startBtn')?.disabled)
-          };
+          p1.click(); p2.click();
+          return { ok: true, p1Label: document.querySelector('#p1Label')?.textContent || '', p2Label: document.querySelector('#p2Label')?.textContent || '', startDisabled: Boolean(document.querySelector('#startBtn')?.disabled) };
         })()`, true);
         console.log(`[smoke] selection ${JSON.stringify(selected)}`);
         if (!selected?.ok || selected.p1Label !== '大卫' || selected.p2Label !== '摩西' || selected.startDisabled) {
           console.error(`Character selection probe failed: ${JSON.stringify(selected)}`);
-          smokeFailed = true;
-          app.exit(1);
-          return;
+          smokeFailed = true; app.exit(1); return;
         }
 
         await win.webContents.executeJavaScript(`window.BIBLE_FIGHTER_TEST_API.selectAndStart('david','moses')`, true);
         const started = await win.webContents.executeJavaScript(`new Promise(resolve => setTimeout(() => resolve(window.BIBLE_FIGHTER_TEST_API.snapshot()), 2800))`, true);
         console.log(`[smoke] battle-start ${JSON.stringify(started)}`);
-        const battleStarted = started?.phase === 'battle'
-          && Array.isArray(started?.fighters)
-          && started.fighters.length === 2
-          && started.fighters[0].id === 'david'
-          && started.fighters[1].id === 'moses';
+        const battleStarted = started?.phase === 'battle' && Array.isArray(started?.fighters) && started.fighters.length === 2 && started.fighters[0].id === 'david' && started.fighters[1].id === 'moses';
         if (!battleStarted) {
           console.error(`Combat start probe failed: ${JSON.stringify(started)}`);
-          smokeFailed = true;
-          app.exit(1);
-          return;
+          smokeFailed = true; app.exit(1); return;
         }
 
         const combatUi = await win.webContents.executeJavaScript(`(() => ({
@@ -177,14 +149,14 @@ function createWindow() {
           skill2: document.querySelector('#skill2 .skill-name')?.textContent || '',
           mapName: document.querySelector('#mapName')?.textContent || '',
           p1Identity: document.querySelector('#identityP1Name')?.textContent || '',
-          p2Identity: document.querySelector('#identityP2Name')?.textContent || ''
+          p2Identity: document.querySelector('#identityP2Name')?.textContent || '',
+          codexReady: Boolean(window.BIBLE_FIGHTER_CODEX_READY),
+          codexEntry: Boolean(window.BIBLE_CODEX?.david)
         }))()`, true);
         console.log(`[smoke] combat-ui ${JSON.stringify(combatUi)}`);
-        if (!combatUi.missionText || !combatUi.skill1 || !combatUi.skill2 || !combatUi.mapName || combatUi.p1Identity !== '大卫' || combatUi.p2Identity !== '摩西') {
-          console.error(`Combat HUD probe failed: ${JSON.stringify(combatUi)}`);
-          smokeFailed = true;
-          app.exit(1);
-          return;
+        if (!combatUi.missionText || !combatUi.skill1 || !combatUi.skill2 || !combatUi.mapName || combatUi.p1Identity !== '大卫' || combatUi.p2Identity !== '摩西' || !combatUi.codexReady || !combatUi.codexEntry) {
+          console.error(`Combat/codex UI probe failed: ${JSON.stringify(combatUi)}`);
+          smokeFailed = true; app.exit(1); return;
         }
 
         await win.webContents.executeJavaScript(`window.BIBLE_FIGHTER_TEST_API.press('p1','a')`, true);
@@ -192,15 +164,11 @@ function createWindow() {
         console.log(`[smoke] attack ${JSON.stringify(afterAttack)}`);
         if (afterAttack?.phase !== 'battle' || afterAttack?.lastAction !== 'p1:a') {
           console.error(`Combat input probe failed: ${JSON.stringify(afterAttack)}`);
-          smokeFailed = true;
-          app.exit(1);
-          return;
+          smokeFailed = true; app.exit(1); return;
         }
       } catch (error) {
         console.error(`Runtime combat probe exception: ${error?.stack || error}`);
-        smokeFailed = true;
-        app.exit(1);
-        return;
+        smokeFailed = true; app.exit(1); return;
       }
       app.exit(smokeFailed ? 1 : 0);
     }, 700);
