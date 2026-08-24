@@ -2,17 +2,17 @@
   'use strict';
   window.BIBLE_FIGHTER_UPDATE_MANIFEST = {
     channel: 'stable',
-    version: '1.2.9',
-    build: 'Global Quality Runtime + Playable Entry',
+    version: '1.3.0',
+    build: 'David Character Showcase + Global Quality Runtime',
     published: '2026-08-24',
     notes: [
-      '质量运行时正式接入 playable 入口',
-      '统一 Windows 桌面版本号与网页入口版本',
-      '加入运行时 FPS、帧时间、DPR 与后台状态诊断',
-      '强化本地 2P 真实移动回归门槛',
-      '保持大卫 vs 摩西、2D 场景、BO3 战斗链稳定'
+      '大卫进入第一轮角色品质打磨',
+      '加入牧者连段、远程确认、突进追击与终结演出路线反馈',
+      '投石索瞄准圈与弹道提示、牧者跃步落点提示、重击方向性反馈',
+      '保留 2P、BO3、稳定性、更新中心与 FPS/帧时间质量诊断',
+      'Windows 发布门槛继续要求真实进入大卫 vs 摩西并执行普攻回归'
     ],
-    minimumWindows: '1.2.9',
+    minimumWindows: '1.3.0',
     download: 'https://github.com/junkaiichen-cpu/Bible/actions'
   };
   window.BIBLE_FIGHTER_UPDATE_READY = true;
