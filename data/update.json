@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.4.1",
-  "build": "David Interaction Pass",
+  "version": "1.4.2",
+  "build": "David Combat Polish Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.1",
+  "minimumWindows": "1.4.2",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "大卫模型与真实战斗投射物同步",
-    "投石索使用真实 S.shots 投射物并带石块拖尾",
-    "真实命中事件同步角色动作、命中闪光与技能反馈",
-    "大卫普攻、投石索、牧者跃步与奥义继续由 A/B 战斗对象驱动",
-    "Windows 构建必须验证大卫模型与真实 projectile/hit interaction 运行时"
+    "大卫完整模型继续使用真实 A/B 战斗对象",
+    "投石索真实 projectile 与命中反馈保持同步",
+    "新增大卫战斗命中冲击、闪帧与终结反馈",
+    "强化重击确认与 KO 终结视觉反馈",
+    "Windows 构建必须验证 1.4.2 combat polish runtime"
   ]
 }
