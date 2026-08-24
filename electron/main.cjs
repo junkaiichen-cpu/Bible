@@ -83,26 +83,58 @@ function createWindow() {
           selectScreen: Boolean(document.querySelector('#selectScreen')),
           battleScreen: Boolean(document.querySelector('#battleScreen')),
           roster: typeof window.BIBLE_ROSTER === 'object',
-          supports: typeof window.BIBLE_SUPPORTS === 'object'
+          supports: typeof window.BIBLE_SUPPORTS === 'object',
+          diagnostics: typeof window.BIBLE_FIGHTER_TEST_API === 'object',
+          diagnosticReady: Boolean(window.BIBLE_FIGHTER_DIAGNOSTICS?.ready)
         }))()`, true);
-        console.log(`[smoke] ${JSON.stringify(probe)}`);
+        console.log(`[smoke] boot ${JSON.stringify(probe)}`);
         const ok = probe.ready === 'complete'
           && probe.canvas
           && probe.startButton
           && probe.selectScreen
           && probe.battleScreen
           && probe.roster
-          && probe.supports;
+          && probe.supports
+          && probe.diagnostics
+          && probe.diagnosticReady;
         if (!ok) {
-          console.error(`Runtime probe failed: ${JSON.stringify(probe)}`);
+          console.error(`Runtime boot probe failed: ${JSON.stringify(probe)}`);
           smokeFailed = true;
+          app.exit(1);
+          return;
+        }
+
+        await win.webContents.executeJavaScript(`window.BIBLE_FIGHTER_TEST_API.selectAndStart('david','moses')`, true);
+        const started = await win.webContents.executeJavaScript(`new Promise(resolve => setTimeout(() => resolve(window.BIBLE_FIGHTER_TEST_API.snapshot()), 2800))`, true);
+        console.log(`[smoke] battle-start ${JSON.stringify(started)}`);
+        const battleStarted = started?.phase === 'battle'
+          && Array.isArray(started?.fighters)
+          && started.fighters.length === 2
+          && started.fighters[0].id === 'david'
+          && started.fighters[1].id === 'moses';
+        if (!battleStarted) {
+          console.error(`Combat start probe failed: ${JSON.stringify(started)}`);
+          smokeFailed = true;
+          app.exit(1);
+          return;
+        }
+
+        await win.webContents.executeJavaScript(`window.BIBLE_FIGHTER_TEST_API.press('p1','a')`, true);
+        const afterAttack = await win.webContents.executeJavaScript(`new Promise(resolve => setTimeout(() => resolve(window.BIBLE_FIGHTER_TEST_API.snapshot()), 120))`, true);
+        console.log(`[smoke] attack ${JSON.stringify(afterAttack)}`);
+        if (afterAttack?.phase !== 'battle' || afterAttack?.lastAction !== 'p1:a') {
+          console.error(`Combat input probe failed: ${JSON.stringify(afterAttack)}`);
+          smokeFailed = true;
+          app.exit(1);
+          return;
         }
       } catch (error) {
-        console.error(`Runtime probe exception: ${error?.stack || error}`);
+        console.error(`Runtime combat probe exception: ${error?.stack || error}`);
         smokeFailed = true;
+        app.exit(1);
+        return;
       }
-      if (!smokeFailed) app.exit(0);
-      else app.exit(1);
+      app.exit(smokeFailed ? 1 : 0);
     }, 700);
   });
 
