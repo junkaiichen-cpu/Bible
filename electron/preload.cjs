@@ -1,6 +1,6 @@
 const { contextBridge, shell } = require('electron');
 
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.3';
 const UPDATE_JSON_URL = 'https://raw.githubusercontent.com/junkaiichen-cpu/Bible/main/data/update.json';
 
 const originalGetElementById = document.getElementById.bind(document);
