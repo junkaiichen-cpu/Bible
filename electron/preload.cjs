@@ -1,6 +1,6 @@
 const { contextBridge, shell } = require('electron');
 
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 const UPDATE_JSON_URL = 'https://raw.githubusercontent.com/junkaiichen-cpu/Bible/main/data/update.json';
 
 const originalGetElementById = document.getElementById.bind(document);
@@ -33,7 +33,18 @@ const mountUpdateCenter = () => {
   manifest.onload = () => { const script=document.createElement('script'); script.src='game34.js'; script.dataset.bibleUpdate='1'; body.appendChild(script); };
   body.appendChild(manifest);
 };
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountUpdateCenter, { once:true }); else mountUpdateCenter();
+
+const mountDavidCombatPolish = () => {
+  const body = document.body || document.documentElement;
+  if (!body || document.querySelector('script[data-bible-david-polish]')) return;
+  const script = document.createElement('script');
+  script.src = 'game43.js';
+  script.dataset.bibleDavidPolish = '1';
+  body.appendChild(script);
+};
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { mountUpdateCenter(); mountDavidCombatPolish(); }, { once:true });
+else { mountUpdateCenter(); mountDavidCombatPolish(); }
 
 contextBridge.exposeInMainWorld('BIBLE_FIGHTER_DESKTOP', {
   version: APP_VERSION,
