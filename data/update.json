@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.4.0",
-  "build": "David Full Character Playable Pass",
+  "version": "1.4.1",
+  "build": "David Interaction Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.4.0",
+  "minimumWindows": "1.4.1",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "将大卫完整像素人物模型真正接入战斗 Canvas",
-    "大卫拥有 5A、投石索、牧者跃步、空中追击与歌利亚终结演出",
-    "加入投石索弹道、拖尾、尘土、冲击环与专属命中特效",
-    "技能输入直接驱动真实战斗对象 A/B，而非独立演示层",
-    "Windows 构建必须验证大卫模型运行时与真实普攻伤害"
+    "大卫模型与真实战斗投射物同步",
+    "投石索使用真实 S.shots 投射物并带石块拖尾",
+    "真实命中事件同步角色动作、命中闪光与技能反馈",
+    "大卫普攻、投石索、牧者跃步与奥义继续由 A/B 战斗对象驱动",
+    "Windows 构建必须验证大卫模型与真实 projectile/hit interaction 运行时"
   ]
 }
