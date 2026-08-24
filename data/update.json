@@ -1,15 +1,15 @@
 {
   "channel": "stable",
-  "version": "1.3.1",
-  "build": "Completed Selection + Combat Presentation",
+  "version": "1.3.2",
+  "build": "Combat Feel + Responsive Input Pass",
   "published": "2026-08-24",
-  "minimumWindows": "1.3.1",
+  "minimumWindows": "1.3.2",
   "download": "https://github.com/junkaiichen-cpu/Bible/actions",
   "notes": [
-    "重新制作实际角色选择界面：像素角色预览、定位、经文锚点与技能预览",
-    "加入以拉谷 / 红海地图预览",
-    "加入完整战斗身份 HUD、回合计分、战斗目标、FPS/状态显示",
-    "保留大卫 1.3 showcase、2P、BO3、稳定性、更新中心与 Codex",
-    "Windows 发布门槛要求新的选择展示层与战斗展示层真正进入 packaged executable"
+    "加入输入缓冲：普攻、技能与突进在受击/前后摇期间可保留短窗口输入",
+    "加入命中停顿与轻重击差异化反馈，提高真实打击感",
+    "加入近身自动朝向修正，减少贴身战斗失去目标的问题",
+    "大卫保留 5A、投石索、牧者跃步、终结演出与 1.3.1 战斗展示层",
+    "Windows 构建会独立上传 EXE build artifact；Smoke 失败不再阻止人工试玩包上传"
   ]
 }
